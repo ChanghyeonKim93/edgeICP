@@ -27,8 +27,8 @@ void VOEdgeICP::run(){
   // iterative part
   cv::namedWindow("debug_img",CV_WINDOW_AUTOSIZE);
   while(1){
-
-
+    getImage(this->rgb_name_vec, this->depth_name_vec, curr_img, curr_depth);
+    
 
 
     // exit the program

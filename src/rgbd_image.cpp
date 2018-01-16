@@ -63,11 +63,12 @@ void dataSyncronize(const std::string& dataset_name, std::vector<std::string>& r
   std::cout<<" ... DONE ! "<<std::endl;
 }
 
-void getImage(const std::string& img_name, const std::string& depth_name, cv::Mat& img_o, cv::Mat& depth_o){
+void getImage(const std::string& img_name, const std::string& depth_name, const double& scale_, cv::Mat& img_o, cv::Mat& depth_o){
 
   img_o = cv::imread(img_name,-1); // -1 : intact image
   depth_o = cv::imread(depth_name,-1);
-  //depth_o.convertTo(depth_o,CV_16U);
+  depth_o.convertTo(depth_o,CV_64F);
+  depth_0*=scale_;
 }
 
 void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
