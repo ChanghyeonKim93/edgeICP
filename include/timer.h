@@ -5,10 +5,12 @@
 #include <time.h>
 #include <random>
 #include <chrono>
-
+#include <sys/time.h>
 
 unsigned long tic();
 unsigned long toc();
 
-#endif
+unsigned long tic2();
+unsigned long toc2();
 
+#endif

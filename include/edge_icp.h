@@ -2,6 +2,7 @@
 #define _EDGE_ICP_H_
 #include "common.h"
 #include "rgbd_image.h"
+#include "timer.h"
 
 class VOEdgeICP{
 
@@ -68,6 +69,9 @@ private:
   cv::Mat curr_depth;
   cv::Mat key_img;
   cv::Mat key_depth;
+
+  // time related
+  unsigned long t_now;
 
   // pixel containers
   std::vector<cv::Point2d> curr_edge_px;

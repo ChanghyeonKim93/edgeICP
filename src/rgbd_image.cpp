@@ -68,7 +68,7 @@ void getImage(const std::string& img_name, const std::string& depth_name, const 
   img_o = cv::imread(img_name,-1); // -1 : intact image
   depth_o = cv::imread(depth_name,-1);
   depth_o.convertTo(depth_o,CV_64F);
-  depth_0*=scale_;
+  depth_o*=scale_;
 }
 
 void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {

@@ -26,11 +26,15 @@ void VOEdgeICP::setKeyImages(){
 void VOEdgeICP::run(){
   // iterative part
   cv::namedWindow("debug_img",CV_WINDOW_AUTOSIZE);
-  while(1){
-    getImage(this->rgb_name_vec, this->depth_name_vec, curr_img, curr_depth);
-    
+  int init_num = 1, final_num=16;
+  int ind = init_num-1;
+  while(ind<=final_num){
+    toc();
+    getImage(this->rgb_name_vec[ind], this->depth_name_vec[ind], this->params.depth.scale, this->curr_img, this->curr_depth);
 
-
+    ind++;
+    this->t_now=toc();
+    std::cout<<"Elapsed time : "<<this->t_now/1000000.0<<" , # of image : "<<ind<<std::endl;
     // exit the program
     if((char)cv::waitKey(0)=='q'){
       std::cout<<std::endl<<std::endl;

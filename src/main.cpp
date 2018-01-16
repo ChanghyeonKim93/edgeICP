@@ -5,8 +5,6 @@
 #include "rgbd_image.h"
 
 int main(void){
-	unsigned long ti,tf;
-
 	//=========================================
 	std::cout<<std::endl<<std::endl<<std::endl;
 	//=========================================
@@ -16,9 +14,10 @@ int main(void){
 
 	VOEdgeICP *vo = new VOEdgeICP(params);
 
-	// algorithm running.
+	// algorithm running .
 	vo->run();
 
+	// release .
 	delete vo;
 	std::cout<<" Memory is released."<<std::endl;
 	//=========================================
