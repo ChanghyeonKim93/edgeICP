@@ -1,6 +1,7 @@
 #ifndef _EDGE_ICP_H_
 #define _EDGE_ICP_H_
 #include "common.h"
+#include "rgbd_image.h"
 
 class VOEdgeICP{
 
@@ -26,21 +27,26 @@ public:
   };
   struct Depth{
     double scale, min, max;
-
     Depth(){//constructor
       scale = 1.0/5000.0;
       min = 0.5; // 50cm
       min = 4.0; // 400cm
     }
   };
+  struct Dataset{
+    std::string dataset_kind;
+    std::string dataset_name;
+  };
   // assorting the all above parameters.
   struct Parameters{
     VOEdgeICP::Calibration calib;
     VOEdgeICP::Depth depth;
+    VOEdgeICP::Dataset dataset;
     // example - VOEdgeICP::Parameters params;
     // params.calib.width = 320;
     // params.depth.scale = 0.001;
   };
+
 
   Parameters params;
 
@@ -49,14 +55,24 @@ public:
 
   void setImages(const cv::Mat& img_i,const cv::Mat& depth_i);
   void setKeyImages();
+  void run();
+
 
 private:
+  // image data sync
+  std::vector<std::string> rgb_name_vec, depth_name_vec;
+	std::vector<double> t_cam_vec;
+
+  // current and key images
   cv::Mat curr_img;
   cv::Mat curr_depth;
   cv::Mat key_img;
   cv::Mat key_depth;
+
+  // pixel containers
   std::vector<cv::Point2d> curr_edge_px;
   std::vector<cv::Point2d> key_edge_px; // for release the vector, vector.resize(0);
+
 
 };
 

@@ -72,12 +72,16 @@ void getImage(const std::string& img_name, const std::string& depth_name, cv::Ma
 
 void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
+    int u2,u21;
     for(int v = 0; v < img_o.rows; ++v) {
         double* img_i_row_ptr1 = img_i.ptr<double>(2*v);
         double* img_i_row_ptr2 = img_i.ptr<double>(2*v+1);
         double* img_o_row_ptr = img_o.ptr<double>(v);
         for(int u = 0; u < img_o.cols; ++u) {
-            img_o_row_ptr[u] =  (img_i_row_ptr1[2*u] + img_i_row_ptr1[2*u+1] + img_i_row_ptr2[2*u] + img_i_row_ptr2[2*u+1]) / 4.0 ;
+          u2 = 2*u;
+          u21 = u2+1;
+
+            img_o_row_ptr[u] =  (img_i_row_ptr1[u2] + img_i_row_ptr1[u21] + img_i_row_ptr2[u2] + img_i_row_ptr2[u21]) / 4.0 ;
         }
     }
 }
