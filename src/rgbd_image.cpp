@@ -65,24 +65,24 @@ void dataSyncronize(const std::string& dataset_name, std::vector<std::string>& r
 
 void getImage(const std::string& img_name, const std::string& depth_name, const double& scale_, cv::Mat& img_o, cv::Mat& depth_o){
 
-  img_o = cv::imread(img_name,0); // -1 : intact image
+  img_o = cv::imread(img_name,0); // 0 : gray image, -1 : intact image
   depth_o = cv::imread(depth_name,-1);
   depth_o.convertTo(depth_o,CV_64F);
   depth_o*=scale_;
+  //output : img_o ( CV_8U = uchar ), depth_o ( CV_64F = double )
 }
 
 void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
     int u2,u21;
     for(int v = 0; v < img_o.rows; ++v) {
-        double* img_i_row_ptr1 = img_i.ptr<double>(2*v);
-        double* img_i_row_ptr2 = img_i.ptr<double>(2*v+1);
-        double* img_o_row_ptr = img_o.ptr<double>(v);
+        uchar* img_i_row_ptr1 = img_i.ptr<uchar>(2*v);
+        uchar* img_i_row_ptr2 = img_i.ptr<uchar>(2*v+1);
+        uchar* img_o_row_ptr = img_o.ptr<uchar>(v);
         for(int u = 0; u < img_o.cols; ++u) {
           u2 = 2*u;
           u21 = u2+1;
-
-            img_o_row_ptr[u] =  (img_i_row_ptr1[u2] + img_i_row_ptr1[u21] + img_i_row_ptr2[u2] + img_i_row_ptr2[u21]) / 4.0 ;
+          img_o_row_ptr[u] =  (uchar)((img_i_row_ptr1[u2] + img_i_row_ptr1[u21] + img_i_row_ptr2[u2] + img_i_row_ptr2[u21]) / 4.0 );
         }
     }
 }
@@ -100,6 +100,7 @@ void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
   		}
   	}
 }
+
 void downSampleDepth(const cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.size().width / 2, img_i.size().height / 2), img_i.type());
     int x0 = 0, x1 = 0, y0 = 0, y1 = 0;
@@ -139,9 +140,9 @@ void downSampleDepth(const cv::Mat& img_i, cv::Mat& img_o) {
 
 void findCannyPixels(cv::Mat& img_i){
   int cnt=0;
-  for(int v=0;v<img_i.rows;v++){
+  for(int v=0; v<img_i.rows;v++){
     uchar* row_ptr = img_i.ptr<uchar>(v);
-    for(int u=0;u<img_i.cols;u++){
+    for(int u=0; u<img_i.cols;u++){
       if(*(row_ptr++)>0){
         cnt++;
       }
@@ -149,27 +150,71 @@ void findCannyPixels(cv::Mat& img_i){
   }
   std::cout<<"cnt : "<<cnt<<std::endl;
 }
-void calcDerivX(const cv::Mat& img_i, cv::Mat& img_o) {
-    img_o.create(img_i.size(), img_i.type());
+
+void calcDerivX(cv::Mat& img_i, cv::Mat& img_o) {
+  cv::Mat temp;
+  temp.create(img_i.size(),CV_64F); // double
+  int prev = 0, next = 0;
+
+  for(int v = 0; v < img_i.rows; ++v) {
+    uchar* input_ptr = img_i.ptr<uchar>(v);
+    double* temp_ptr = temp.ptr<double>(v);
+    for(int u = 1; u < img_i.cols-1; ++u) {
+        *(temp_ptr+u) = (double)( *(input_ptr+1+u) - *(input_ptr-1+u) ) * 0.5;
+    }
+  }
+  temp.copyTo(img_o);
+}
+
+void calcDerivY( cv::Mat& img_i, cv::Mat& img_o) {
+  cv::Mat temp;
+  temp.create(img_i.size(),CV_64F);
+  for(int v = 1; v < img_i.rows-1; ++v) {
+    uchar* input_ptr_low = img_i.ptr<uchar>(v-1);
+    uchar* input_ptr_high = img_i.ptr<uchar>(v+1);
+    double* temp_ptr = temp.ptr<double>(v);
+    for(int u = 0; u < img_i.cols; ++u) {
+      *(temp_ptr+u) = (double)( *(input_ptr_high+u) - *(input_ptr_low+u) ) * 0.5;
+    }
+  }
+  temp.copyTo(img_o);
+}
+
+void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o) {
+  cv::Mat temp;
+  temp.create(dx.size(),CV_64F);
+  for(int v = 0; v< dx.rows;v++){
+    double* dx_ptr = dx.ptr<double>(v);
+    double* dy_ptr = dy.ptr<double>(v);
+    double* temp_ptr = temp.ptr<double>(v);
+    for(int u=0;u<dx.cols;u++){
+      *(temp_ptr+u) = sqrt((*(dx_ptr+u))*(*(dx_ptr+u)) + (*(dy_ptr+u))*(*(dy_ptr+u)) );
+    }
+  }
+  temp.copyTo(img_o);
+}
+
+void calcDerivX2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
+    img_o.create(img_i.size(), CV_64F);
     int prev = 0, next = 0;
     for(int y = 0; y < img_i.rows; ++y) {
         for(int x = 0; x < img_i.cols; ++x) {
             prev = std::max(x - 1, 0);
             next = std::min(x + 1, img_i.cols - 1);
-            img_o.at<double>(y, x) = ( (img_i.at<double>(y, next) - img_i.at<double>(y, prev)) * 0.5f );
+            img_o.at<double>(y, x) = ( (img_i.at<uchar>(y, next) - img_i.at<uchar>(y, prev)) * 0.5f );
         }
     }
 }
 
-void calcDerivY(const cv::Mat& img_i, cv::Mat& img_o) {
-    img_o.create(img_i.size(), img_i.type());
+void calcDerivY2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
+    img_o.create(img_i.size(), CV_64F);
     int prev = 0, next = 0;
     for(int y = 0; y < img_i.rows; ++y) {
         for(int x = 0; x < img_i.cols; ++x) {
             prev = std::max(y - 1, 0);
             next = std::min(y + 1, img_i.rows - 1);
 
-            img_o.at<double>(y, x) = ( (img_i.at<double>(next, x) - img_i.at<double>(prev, x)) * 0.5f );
+            img_o.at<double>(y, x) = ((img_i.at<uchar>(next, x) - img_i.at<uchar>(prev, x)) * 0.5f );
         }
     }
 }

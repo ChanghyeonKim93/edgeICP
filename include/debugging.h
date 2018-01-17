@@ -3,6 +3,9 @@
 
 #include "common.h"
 
-std::string getImageType(int);
+namespace dbg{
+  std::string getImageType(int);
+  void DEBUG_MESSAGE(std::string&);
+};
 
 #endif

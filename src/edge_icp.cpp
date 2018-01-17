@@ -17,16 +17,15 @@ void VOEdgeICP::setImages(const cv::Mat& img_i, const cv::Mat& depth_i){
 };
 
 void VOEdgeICP::setKeyImages(){
+	std::vector<cv::Mat> null_vec1, null_vec2;
+
   curr_img.copyTo(key_img);
   curr_depth.copyTo(key_depth);
 
   curr_img.release();
   curr_depth.release();
-	std::vector<cv::Mat> null_vec1, null_vec2;
 	null_vec1.swap(curr_img_vec);
-	//curr_img_vec.resize(0);
 	null_vec2.swap(curr_depth_vec);
-	//curr_depth_vec.resize(0);
 };
 
 void VOEdgeICP::run(){
@@ -34,31 +33,35 @@ void VOEdgeICP::run(){
   cv::namedWindow("debug_img",CV_WINDOW_AUTOSIZE);
   int init_num = 1, final_num=90;
   int ind = init_num-1;
-
-
-	while(ind<final_num){
-		getImage(this->rgb_name_vec[ind], this->depth_name_vec[ind], this->params.depth.scale, this->curr_img, this->curr_depth);
-		this->curr_img_vec.push_back(this->curr_img);
-		this->curr_depth_vec.push_back(this->curr_depth);
+	// read all dataset
+	while(ind < final_num){
+		cv::Mat img_temp,depth_temp;
+		getImage(this->rgb_name_vec[ind], this->depth_name_vec[ind], this->params.depth.scale, img_temp, depth_temp);
+		this->curr_img_vec.push_back(img_temp);
+		this->curr_depth_vec.push_back(depth_temp);
+		img_temp.release();
+		depth_temp.release();
 		++ind;
 	}
 	std::cout<<" Image loading done"<<std::endl<<std::endl;
 	cv::waitKey(2000);
 
+	// algorithm part
 	ind = init_num-1;
-
   while(ind<=final_num){
 		toc();
+		cv::Mat edge_map,dx,dy,d_norm;
+		downSampleImage(this->curr_img_vec[ind], this->curr_img);
+		cv::Canny(this->curr_img,edge_map,150,250); // heuristic, Canny accepts CV_8U only.
+		// dbg::getImageType(this->curr_img.type());
+	  findCannyPixels(edge_map);
+   //	cv::imshow("debug_img",contours);
+		calcDerivX(this->curr_img, dx);
+	  calcDerivY(this->curr_img, dy);
+		calcDerivNorm(dx,dy,d_norm);
 
-		cv::Mat contours,devX,devY;
-		cv::Canny(this->curr_img_vec[ind],contours,150,250); // heuristic
-		getImageType(this->curr_img_vec[ind].type());
-	  findCannyPixels(contours);
-		//calcDerivX(this->curr_img_vec[ind],devX);
-		//calcDerivY(this->curr_img_vec[ind],devY);
-		cv::imshow("devx",this->curr_img_vec[ind]);
-		//cv::imshow("devy",devY);
-		cv::imshow("debug_img",contours);
+
+
 		// end of while loop
     ++ind;
 		this->t_now=toc();
