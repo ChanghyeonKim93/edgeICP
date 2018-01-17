@@ -36,21 +36,15 @@ LIST(APPEND SOURCEFILES
   src/timer.cpp
   src/edge_icp.cpp
   src/rgbd_image.cpp
+  src/debugging.cpp
 )
 
 
 # Set build flags, set ARM_ARCHITECTURE environment variable on Odroid
 set(CMAKE_CXX_FLAGS "-msse3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(DCMAKE_build_type "Release")
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-      STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
+set(DCMAKE_build_type "Debug")
+
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg  -m64 -Ofast -flto -march=native -mfpmath=sse")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3  -DEIGEN_NO_DEBUG -fopenmp -DNDEBUG")
 

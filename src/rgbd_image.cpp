@@ -65,7 +65,7 @@ void dataSyncronize(const std::string& dataset_name, std::vector<std::string>& r
 
 void getImage(const std::string& img_name, const std::string& depth_name, const double& scale_, cv::Mat& img_o, cv::Mat& depth_o){
 
-  img_o = cv::imread(img_name,-1); // -1 : intact image
+  img_o = cv::imread(img_name,0); // -1 : intact image
   depth_o = cv::imread(depth_name,-1);
   depth_o.convertTo(depth_o,CV_64F);
   depth_o*=scale_;
@@ -149,7 +149,7 @@ void findCannyPixels(cv::Mat& img_i){
   }
   std::cout<<"cnt : "<<cnt<<std::endl;
 }
-/*void calcDerivX(const cv::Mat& img_i, cv::Mat& img_o) {
+void calcDerivX(const cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(img_i.size(), img_i.type());
     int prev = 0, next = 0;
     for(int y = 0; y < img_i.rows; ++y) {
@@ -174,7 +174,8 @@ void calcDerivY(const cv::Mat& img_i, cv::Mat& img_o) {
     }
 }
 
-double interp2(const cv::Mat& img_i, const double& u, const double& v) {
+
+/*double interp2(const cv::Mat& img_i, const double& u, const double& v) {
     // 1-based pixel coordinates (u,v) and (x0, y0) / (x1, y1)
     int x0 = (int) (std::floor(u));
     int y0 = (int) (std::floor(v));

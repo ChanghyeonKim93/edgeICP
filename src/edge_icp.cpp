@@ -1,4 +1,5 @@
 #include "edge_icp.h"
+#include "debugging.h"
 
 // constructor overloadings
 VOEdgeICP::VOEdgeICP(Parameters params):params(params){
@@ -45,12 +46,18 @@ void VOEdgeICP::run(){
 	cv::waitKey(2000);
 
 	ind = init_num-1;
+
   while(ind<=final_num){
 		toc();
 
-		cv::Mat contours;
+		cv::Mat contours,devX,devY;
 		cv::Canny(this->curr_img_vec[ind],contours,150,250); // heuristic
+		getImageType(this->curr_img_vec[ind].type());
 	  findCannyPixels(contours);
+		//calcDerivX(this->curr_img_vec[ind],devX);
+		//calcDerivY(this->curr_img_vec[ind],devY);
+		cv::imshow("devx",this->curr_img_vec[ind]);
+		//cv::imshow("devy",devY);
 		cv::imshow("debug_img",contours);
 		// end of while loop
     ++ind;
