@@ -137,6 +137,18 @@ void downSampleDepth(const cv::Mat& img_i, cv::Mat& img_o) {
     }
 }
 
+void findCannyPixels(cv::Mat& img_i){
+  int cnt=0;
+  for(int v=0;v<img_i.rows;v++){
+    uchar* row_ptr = img_i.ptr<uchar>(v);
+    for(int u=0;u<img_i.cols;u++){
+      if(*(row_ptr++)>0){
+        cnt++;
+      }
+    }
+  }
+  std::cout<<"cnt : "<<cnt<<std::endl;
+}
 /*void calcDerivX(const cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(img_i.size(), img_i.type());
     int prev = 0, next = 0;
