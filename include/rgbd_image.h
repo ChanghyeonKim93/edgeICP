@@ -2,23 +2,27 @@
 #define _RGBD_IMAGE_H_
 #include "common.h"
 
-void downSampleImage(cv::Mat& img_i, cv::Mat& img_o);
-void downSampleDepth(cv::Mat& img_i, cv::Mat& img_o);
-void getAssociationFile(const std::string&, std::vector<std::string>&,std::vector<std::string>&,std::vector<std::string>&);
-void dataSyncronize(const std::string&, std::vector<std::string>&, std::vector<std::string>&, std::vector<double>&);
-void getImage(const std::string&, const std::string&, const double&, cv::Mat&, cv::Mat&);
-void findCannyPixels(cv::Mat&);
-void calcDerivX(cv::Mat&, cv::Mat&);
-void calcDerivY(cv::Mat&, cv::Mat&);
-void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&);
-void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&);
-void findValidMask(cv::Mat&, cv::Mat&, cv::Mat&);
+namespace RGBDIMAGE{
+  void downSampleImage(cv::Mat& img_i, cv::Mat& img_o);
+  void downSampleDepth(cv::Mat& img_i, cv::Mat& img_o);
+  void getAssociationFile(const std::string&, std::vector<std::string>&,std::vector<std::string>&,std::vector<std::string>&);
+  void dataSyncronize(const std::string&, std::vector<std::string>&, std::vector<std::string>&, std::vector<double>&);
+  void getImage(const std::string&, const std::string&, const double&, cv::Mat&, cv::Mat&);
+  void findCannyPixels(cv::Mat&);
+  void calcDerivX(cv::Mat&, cv::Mat&);
+  void calcDerivY(cv::Mat&, cv::Mat&);
+  void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&);
+  void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&);
+  void findValidMask(cv::Mat&, cv::Mat&, cv::Mat&, int&);
+  void setEdgePoints(cv::Mat&,cv::Mat&,cv::Mat&, int&, Eigen::VectorXd&,Eigen::VectorXd&,Eigen::VectorXd&,Eigen::VectorXd&);
 
+  // not use
+  void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o);
+  void calcDerivX2(cv::Mat&, cv::Mat&);
+  void calcDerivY2(cv::Mat&, cv::Mat&);
 
-// not use
-void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o);
-void calcDerivX2(cv::Mat&, cv::Mat&);
-void calcDerivY2(cv::Mat&, cv::Mat&);
+};
+
 
 /*double interp2(const cv::Mat& img_i, const double& u, const double& v);
 //void undistort(const cv::Mat& img_i, cv::Mat& img_0);

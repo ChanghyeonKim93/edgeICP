@@ -68,6 +68,7 @@ private:
   cv::Mat curr_img, curr_depth; // current image Mat
   cv::Mat key_img, key_depth; // key image Mat
   cv::Mat curr_valid_mask, key_valid_mask; // curr & key image valid mask
+  int curr_valid_num_px, key_valid_num_px;
   std::vector<cv::Mat> curr_img_vec, curr_depth_vec; //
 
   // time related
@@ -77,7 +78,9 @@ private:
   // pixel containers
   std::vector<cv::Point2d> curr_edge_px;
   std::vector<cv::Point2d> key_edge_px; // for release the vector, vector.resize(0);
-  
+  Eigen::VectorXd curr_pt_u,curr_pt_v, key_pt_u,key_pt_v;
+  Eigen::VectorXd curr_grad_u,curr_grad_v, key_grad_u,key_grad_v;
+
 };
 
 

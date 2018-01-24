@@ -1,6 +1,6 @@
 #include "rgbd_image.h"
 
-void getAssociationFile(const std::string& dataset_name, std::vector<std::string>& rgb_assoc_vec,std::vector<std::string>& depth_assoc_vec, std::vector<std::string>& truth_assoc_vec){
+void RGBDIMAGE::getAssociationFile(const std::string& dataset_name, std::vector<std::string>& rgb_assoc_vec,std::vector<std::string>& depth_assoc_vec, std::vector<std::string>& truth_assoc_vec){
   std::cout<<"   Association file reading : "<<dataset_name<<" ... ";
   std::ifstream rgb_file("../dataset/"+dataset_name+"/rgb.txt");
   std::ifstream depth_file("../dataset/"+dataset_name+"/depth.txt");
@@ -19,7 +19,7 @@ void getAssociationFile(const std::string& dataset_name, std::vector<std::string
   std::cout<<" DONE !"<<std::endl;
 }
 
-void dataSyncronize(const std::string& dataset_name, std::vector<std::string>& rgb_name_sync, std::vector<std::string>& depth_name_sync, std::vector<double>& time_sync){
+void RGBDIMAGE::dataSyncronize(const std::string& dataset_name, std::vector<std::string>& rgb_name_sync, std::vector<std::string>& depth_name_sync, std::vector<double>& time_sync){
   std::cout<<" TUM Data synchronization ... "<<std::endl;
 
   char* temp;
@@ -29,7 +29,7 @@ void dataSyncronize(const std::string& dataset_name, std::vector<std::string>& r
   std::vector<std::string> rgb_name_raw, depth_name_raw, truth_assoc_vec;
   std::vector<double> t_cam_vec;
 
-  getAssociationFile(dataset_name, rgb_name_raw, depth_name_raw, truth_assoc_vec);
+  RGBDIMAGE::getAssociationFile(dataset_name, rgb_name_raw, depth_name_raw, truth_assoc_vec);
 
   // divide the time and filename
   for(rgb_iter = rgb_name_raw.begin(); rgb_iter!=rgb_name_raw.end(); rgb_iter++){
@@ -63,7 +63,7 @@ void dataSyncronize(const std::string& dataset_name, std::vector<std::string>& r
   std::cout<<" ... DONE ! "<<std::endl;
 }
 
-void getImage(const std::string& img_name, const std::string& depth_name, const double& scale_, cv::Mat& img_o, cv::Mat& depth_o){
+void RGBDIMAGE::getImage(const std::string& img_name, const std::string& depth_name, const double& scale_, cv::Mat& img_o, cv::Mat& depth_o){
 
   img_o = cv::imread(img_name,0); // 0 : gray image, -1 : intact image
   depth_o = cv::imread(depth_name,-1);
@@ -72,7 +72,7 @@ void getImage(const std::string& img_name, const std::string& depth_name, const 
   //output : img_o ( CV_8U = uchar ), depth_o ( CV_64F = double )
 }
 
-void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
+void RGBDIMAGE::downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
     int u2,u21;
     for(int v = 0; v < img_o.rows; ++v) {
@@ -87,7 +87,7 @@ void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
     }
 }
 
-void downSampleDepth(cv::Mat& img_i, cv::Mat& img_o) {
+void RGBDIMAGE::downSampleDepth(cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.size().width / 2, img_i.size().height / 2), img_i.type());
     int u0 = 0, u1 = 0, v0 = 0, v1 = 0;
     double sum, cnt;
@@ -124,7 +124,7 @@ void downSampleDepth(cv::Mat& img_i, cv::Mat& img_o) {
     }
 }
 
-void findCannyPixels(cv::Mat& img_i){
+void RGBDIMAGE::findCannyPixels(cv::Mat& img_i){
   int cnt=0;
   for(int v=0; v<img_i.rows;v++){
     uchar* row_ptr = img_i.ptr<uchar>(v);
@@ -137,7 +137,7 @@ void findCannyPixels(cv::Mat& img_i){
   std::cout<<"cnt : "<<cnt<<std::endl;
 }
 
-void calcDerivX(cv::Mat& img_i, cv::Mat& img_o) {
+void RGBDIMAGE::calcDerivX(cv::Mat& img_i, cv::Mat& img_o) {
   cv::Mat temp;
   temp.create(img_i.size(),CV_64F); // double
   int prev = 0, next = 0;
@@ -152,7 +152,7 @@ void calcDerivX(cv::Mat& img_i, cv::Mat& img_o) {
   temp.copyTo(img_o);
 }
 
-void calcDerivY( cv::Mat& img_i, cv::Mat& img_o) {
+void RGBDIMAGE::calcDerivY( cv::Mat& img_i, cv::Mat& img_o) {
   cv::Mat temp;
   temp.create(img_i.size(),CV_64F);
   for(int v = 1; v < img_i.rows-1; ++v) {
@@ -166,7 +166,7 @@ void calcDerivY( cv::Mat& img_i, cv::Mat& img_o) {
   temp.copyTo(img_o);
 }
 
-void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o) {
+void RGBDIMAGE::calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o) {
   cv::Mat temp;
   temp.create(dx.size(),CV_64F);
   for(int v = 0; v< dx.rows;v++){
@@ -180,7 +180,7 @@ void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o) {
   temp.copyTo(img_o);
 }
 
-void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o, cv::Mat& dx_o, cv::Mat& dy_o) {
+void RGBDIMAGE::calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o, cv::Mat& dx_o, cv::Mat& dy_o) {
   cv::Mat temp, temp_x, temp_y;
   temp.create(dx.size(),CV_64F);
   temp_x.create(dx.size(),CV_64F);
@@ -203,8 +203,9 @@ void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o, cv::Mat& dx_o, cv::
   temp_y.copyTo(dy_o);
 }
 
-void findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& img_o){
+void RGBDIMAGE::findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& img_o, int& valid_num_px){
   cv::Mat temp;
+  valid_num_px = 0; // initialize
   temp.create(edge_map.size(),CV_8U);
   for(int v = 0; v< edge_map.rows;v++){
     uchar* edge_ptr = edge_map.ptr<uchar>(v);
@@ -213,6 +214,7 @@ void findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& img_o){
     for(int u = 0; u<edge_map.cols; u++){
       if(*(edge_ptr++) > 0 & *(depth_ptr++) > 0){
         *(temp_ptr++) = 255;
+        valid_num_px++;
       }
       else{
         *(temp_ptr++) = 0;
@@ -222,13 +224,35 @@ void findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& img_o){
   temp.copyTo(img_o); // output : valid pixel mask cv::Mat image
 }
 
+void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& grad_y, int& valid_num, Eigen::VectorXd& arr_u,Eigen::VectorXd& arr_v, Eigen::VectorXd& arr_grad_u,Eigen::VectorXd&arr_grad_v){//input : valid mask(Mat), ptr (Eigen::data()) row major
+  arr_u.resize(valid_num);
+  arr_v.resize(valid_num);
+  arr_grad_u.resize(valid_num);
+  arr_grad_v.resize(valid_num);
+
+  int ind = 0;
+  for(int v = 0;v<valid_mask.rows;v++){
+    uchar* valid_mask_ptr = valid_mask.ptr<uchar>(v);
+    double* grad_x_ptr = grad_x.ptr<double>(v);
+    double* grad_y_ptr = grad_y.ptr<double>(v);
+    for(int u = 0; u<valid_mask.cols;u++){
+      if(*(valid_mask_ptr++)==255){
+        arr_u(ind)=u;
+        arr_v(ind)=v;
+        arr_grad_u(ind)=*(grad_x_ptr+u);
+        arr_grad_v(ind)=*(grad_y_ptr+u);
+        ind++;
+      }
+    }
+  }
+}
 
 
 
 
 // not use
 
-void calcDerivX2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
+void RGBDIMAGE::calcDerivX2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
     img_o.create(img_i.size(), CV_64F);
     int prev = 0, next = 0;
     for(int y = 0; y < img_i.rows; ++y) {
@@ -240,7 +264,7 @@ void calcDerivX2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr
     }
 }
 
-void calcDerivY2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
+void RGBDIMAGE::calcDerivY2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
     img_o.create(img_i.size(), CV_64F);
     int prev = 0, next = 0;
     for(int y = 0; y < img_i.rows; ++y) {
@@ -253,7 +277,7 @@ void calcDerivY2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr
     }
 }
 
-void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
+void RGBDIMAGE::downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
     int x0, x1, y0, y1;
   	for (int y=0;y<img_o.rows;++y){

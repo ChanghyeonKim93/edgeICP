@@ -4,6 +4,8 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/exe.dir/src/edge_icp.cpp.o"
   "CMakeFiles/exe.dir/src/rgbd_image.cpp.o"
   "CMakeFiles/exe.dir/src/debugging.cpp.o"
+  "CMakeFiles/exe.dir/src/kdtree.cpp.o"
+  "CMakeFiles/exe.dir/src/kdtree_my.cpp.o"
   "exe.pdb"
   "exe"
 )

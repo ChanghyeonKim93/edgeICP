@@ -4,7 +4,7 @@
 // constructor overloadings
 VOEdgeICP::VOEdgeICP(Parameters params):params(params){
   // synchronize the rgb images and depth images.
-	dataSyncronize(params.dataset.dataset_name, this->rgb_name_vec, this->depth_name_vec, this->t_cam_vec);
+	RGBDIMAGE::dataSyncronize(params.dataset.dataset_name, this->rgb_name_vec, this->depth_name_vec, this->t_cam_vec);
 };
 // deconstructor
 VOEdgeICP::~VOEdgeICP(){};
@@ -37,7 +37,7 @@ void VOEdgeICP::run(){
 	// read all dataset
 	while(ind < final_num){
 		cv::Mat img_temp,depth_temp;
-		getImage(this->rgb_name_vec[ind], this->depth_name_vec[ind], this->params.depth.scale, img_temp, depth_temp);
+		RGBDIMAGE::getImage(this->rgb_name_vec[ind], this->depth_name_vec[ind], this->params.depth.scale, img_temp, depth_temp);
 		this->curr_img_vec.push_back(img_temp);
 		this->curr_depth_vec.push_back(depth_temp);
 		img_temp.release();
@@ -54,18 +54,17 @@ void VOEdgeICP::run(){
 		toc();
 		cv::Mat edge_map,dx,dy,d_norm;
 
-		downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
-		downSampleDepth(this->curr_depth_vec[ind], this->curr_depth); // downsample depth
+		RGBDIMAGE::downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
+		RGBDIMAGE::downSampleDepth(this->curr_depth_vec[ind], this->curr_depth); // downsample depth
 
-		calcDerivX(this->curr_img, dx); // gradient map
-		calcDerivY(this->curr_img, dy);
-		calcDerivNorm(dx,dy,d_norm,dx,dy);
+		RGBDIMAGE::calcDerivX(this->curr_img, dx); // gradient map
+		RGBDIMAGE::calcDerivY(this->curr_img, dy);
+		RGBDIMAGE::calcDerivNorm(dx,dy,d_norm,dx,dy);
 		cv::Canny(this->curr_img,edge_map,170,220); // heuristic, Canny accepts CV_8U only.
 
-		findValidMask(edge_map, this->curr_depth, this->curr_valid_mask); // pixels used as edge pixels.
-
-		
-
+		RGBDIMAGE::findValidMask(edge_map, this->curr_depth, this->curr_valid_mask,this->curr_valid_num_px); // pixels used as edge pixels.
+		RGBDIMAGE::setEdgePoints(this->curr_valid_mask,dx,dy, this-> curr_valid_num_px,this->curr_pt_u,this->curr_pt_v, this->curr_grad_u,this->curr_grad_v); // made the pts sets.
+		//std::cout<< "NUM OF PTS : "<<this->curr_pt_u.size()<<std::endl;
 
 
 		// end of while loop
