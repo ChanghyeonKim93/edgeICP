@@ -65,21 +65,19 @@ private:
 	std::vector<double> t_cam_vec;
 
   // current and key images
-  cv::Mat curr_img;
-  cv::Mat curr_depth;
-  cv::Mat key_img;
-  cv::Mat key_depth;
-  std::vector<cv::Mat> curr_img_vec;
-  std::vector<cv::Mat> curr_depth_vec;
+  cv::Mat curr_img, curr_depth; // current image Mat
+  cv::Mat key_img, key_depth; // key image Mat
+  cv::Mat curr_valid_mask, key_valid_mask; // curr & key image valid mask
+  std::vector<cv::Mat> curr_img_vec, curr_depth_vec; //
 
   // time related
   unsigned long t_now;
   std::vector<double> t_save;
+
   // pixel containers
   std::vector<cv::Point2d> curr_edge_px;
   std::vector<cv::Point2d> key_edge_px; // for release the vector, vector.resize(0);
-
-
+  
 };
 
 

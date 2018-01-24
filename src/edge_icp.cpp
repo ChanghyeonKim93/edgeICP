@@ -31,7 +31,8 @@ void VOEdgeICP::setKeyImages(){
 void VOEdgeICP::run(){
   // iterative part
   cv::namedWindow("debug_img",CV_WINDOW_AUTOSIZE);
-  int init_num = 1, final_num=90;
+  int init_num = 1, final_num=16
+	;
   int ind = init_num-1;
 	// read all dataset
 	while(ind < final_num){
@@ -48,17 +49,22 @@ void VOEdgeICP::run(){
 
 	// algorithm part
 	ind = init_num-1;
-  while(ind<=final_num){
+  while(ind<final_num){
+		// dbg::getImageType(cv::Mat&);
 		toc();
 		cv::Mat edge_map,dx,dy,d_norm;
-		downSampleImage(this->curr_img_vec[ind], this->curr_img);
-		cv::Canny(this->curr_img,edge_map,150,250); // heuristic, Canny accepts CV_8U only.
-		// dbg::getImageType(this->curr_img.type());
-	  findCannyPixels(edge_map);
-   //	cv::imshow("debug_img",contours);
-		calcDerivX(this->curr_img, dx);
-	  calcDerivY(this->curr_img, dy);
-		calcDerivNorm(dx,dy,d_norm);
+
+		downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
+		downSampleDepth(this->curr_depth_vec[ind], this->curr_depth); // downsample depth
+
+		calcDerivX(this->curr_img, dx); // gradient map
+		calcDerivY(this->curr_img, dy);
+		calcDerivNorm(dx,dy,d_norm,dx,dy);
+		cv::Canny(this->curr_img,edge_map,170,220); // heuristic, Canny accepts CV_8U only.
+
+		findValidMask(edge_map, this->curr_depth, this->curr_valid_mask); // pixels used as edge pixels.
+
+		
 
 
 

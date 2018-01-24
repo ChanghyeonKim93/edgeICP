@@ -87,53 +87,39 @@ void downSampleImage(cv::Mat& img_i, cv::Mat& img_o) {
     }
 }
 
-void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
-    img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
-    int x0, x1, y0, y1;
-  	for (int y=0;y<img_o.rows;++y){
-  		for(int x=0;x<img_o.cols;++x){
-  			x0 = x * 2;
-  			x1 = x0 + 1;
-  			y0 = y * 2;
-  			y1 = y0 + 1;
-  			img_o.at<double>(y,x) = (img_i.at<double>(y0,x0) + img_i.at<double>(y0,x1) + img_i.at<double>(y1,x0) + img_i.at<double>(y1,x1)) / 4.0;
-  		}
-  	}
-}
-
-void downSampleDepth(const cv::Mat& img_i, cv::Mat& img_o) {
+void downSampleDepth(cv::Mat& img_i, cv::Mat& img_o) {
     img_o.create(cv::Size(img_i.size().width / 2, img_i.size().height / 2), img_i.type());
-    int x0 = 0, x1 = 0, y0 = 0, y1 = 0;
+    int u0 = 0, u1 = 0, v0 = 0, v1 = 0;
     double sum, cnt;
-    for(int y = 0; y < img_o.rows; ++y) {
-        for(int x = 0; x < img_o.cols; ++x) {
-            x0 = x * 2;
-            x1 = x0 + 1;
-            y0 = y * 2;
-            y1 = y0 + 1;
+    for(int v = 0; v < img_o.rows; ++v) {
+        for(int u = 0; u < img_o.cols; ++u) {
+            u0 = u * 2;
+            u1 = u0 + 1;
+            v0 = v * 2;
+            v1 = v0 + 1;
 
             // initialize
             sum = 0;
             cnt = 0;
 
-            if((img_i.at<double>(y0, x0) != 0.0f)) {
-                sum += img_i.at<double>(y0, x0);
+            if((img_i.at<double>(v0, u0) > 0.01f)) {
+                sum += img_i.at<double>(v0, u0);
                 cnt += 1;
             }
-            if((img_i.at<double>(y0, x1) != 0.0f)) {
-                sum += img_i.at<double>(y0, x1);
+            if((img_i.at<double>(v0, u1) > 0.01f)) {
+                sum += img_i.at<double>(v0, u1);
                 cnt += 1;
             }
-            if((img_i.at<double>(y1, x0) != 0.0f)) {
-                sum += img_i.at<double>(y1, x0);
+            if((img_i.at<double>(v1, u0) > 0.01f)) {
+                sum += img_i.at<double>(v1, u0);
                 cnt += 1;
             }
-            if((img_i.at<double>(y1, x1) != 0.0f)) {
-                sum += img_i.at<double>(y1, x1);
+            if((img_i.at<double>(v1, u1) > 0.01f)) {
+                sum += img_i.at<double>(v1, u1);
                 cnt += 1;
             }
-            if(cnt > 0) img_o.at<double>(y, x) = ( sum / cnt );
-            else img_o.at<double>(y, x) = 0;
+            if(cnt > 0) img_o.at<double>(v, u) = ( sum / cnt );
+            else img_o.at<double>(v, u) = 0;
         }
     }
 }
@@ -194,6 +180,54 @@ void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o) {
   temp.copyTo(img_o);
 }
 
+void calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o, cv::Mat& dx_o, cv::Mat& dy_o) {
+  cv::Mat temp, temp_x, temp_y;
+  temp.create(dx.size(),CV_64F);
+  temp_x.create(dx.size(),CV_64F);
+  temp_y.create(dx.size(),CV_64F);
+
+  for(int v = 0; v< dx.rows;v++){
+    double* dx_ptr = dx.ptr<double>(v);
+    double* dy_ptr = dy.ptr<double>(v);
+    double* temp_x_ptr = temp_x.ptr<double>(v);
+    double* temp_y_ptr = temp_y.ptr<double>(v);
+    double* temp_ptr = temp.ptr<double>(v);
+    for(int u=0;u<dx.cols;u++){
+      *(temp_ptr+u) = sqrt((*(dx_ptr+u))*(*(dx_ptr+u)) + (*(dy_ptr+u))*(*(dy_ptr+u)) );
+      *(temp_x_ptr+u) = (*(dx_ptr+u)) / (*(temp_ptr+u));
+      *(temp_y_ptr+u) = (*(dy_ptr+u)) / (*(temp_ptr+u));
+    }
+  }
+  temp.copyTo(img_o);
+  temp_x.copyTo(dx_o);
+  temp_y.copyTo(dy_o);
+}
+
+void findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& img_o){
+  cv::Mat temp;
+  temp.create(edge_map.size(),CV_8U);
+  for(int v = 0; v< edge_map.rows;v++){
+    uchar* edge_ptr = edge_map.ptr<uchar>(v);
+    double* depth_ptr = depth_map.ptr<double>(v);
+    uchar* temp_ptr = temp.ptr<uchar>(v);
+    for(int u = 0; u<edge_map.cols; u++){
+      if(*(edge_ptr++) > 0 & *(depth_ptr++) > 0){
+        *(temp_ptr++) = 255;
+      }
+      else{
+        *(temp_ptr++) = 0;
+      }
+    }
+  }
+  temp.copyTo(img_o); // output : valid pixel mask cv::Mat image
+}
+
+
+
+
+
+// not use
+
 void calcDerivX2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
     img_o.create(img_i.size(), CV_64F);
     int prev = 0, next = 0;
@@ -217,6 +251,20 @@ void calcDerivY2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr
             img_o.at<double>(y, x) = ((img_i.at<uchar>(next, x) - img_i.at<uchar>(prev, x)) * 0.5f );
         }
     }
+}
+
+void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
+    img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
+    int x0, x1, y0, y1;
+  	for (int y=0;y<img_o.rows;++y){
+  		for(int x=0;x<img_o.cols;++x){
+  			x0 = x * 2;
+  			x1 = x0 + 1;
+  			y0 = y * 2;
+  			y1 = y0 + 1;
+  			img_o.at<double>(y,x) = (img_i.at<double>(y0,x0) + img_i.at<double>(y0,x1) + img_i.at<double>(y1,x0) + img_i.at<double>(y1,x1)) / 4.0;
+  		}
+  	}
 }
 
 
