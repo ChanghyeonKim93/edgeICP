@@ -45,12 +45,11 @@ LIST(APPEND SOURCEFILES
 
 
 # Set build flags, set ARM_ARCHITECTURE environment variable on Odroid
-set(CMAKE_CXX_FLAGS "-msse3")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(DCMAKE_build_type "Debug")
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg  -m64 -Ofast -flto -march=native -mfpmath=sse")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3  -DEIGEN_NO_DEBUG -fopenmp -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(DCMAKE_build_type "debug")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -O2 -m64 -Ofast -flto -msse2 -march=native -mfpmath=sse")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3  -DEIGEN_NO_DEBUG -fopenmp -DNDEBUG") # not recommended
 
 
 ################################################################################

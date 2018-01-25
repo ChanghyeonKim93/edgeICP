@@ -76,7 +76,7 @@ static void clear_rec(struct kdnode *node, void (*destr)(void*))
 
     clear_rec(node->left, destr);
     clear_rec(node->right, destr);
-    
+
     if(destr) {
         destr(node->data);
     }
@@ -152,7 +152,7 @@ static int find_nearest(struct kdnode *node, const double *pos, double range, st
 
     if(!node) return 0;
 
-    dist_sq = 0;
+    dist_sq = 0; // I THINK THIS IS THE FUNCTION WHICH I HAVE TO MODIFY.
     for(i=0; i<dim; i++) {
         dist_sq += SQ(node->pos[i] - pos[i]);
     }
@@ -185,7 +185,7 @@ static int find_nearest_n(struct kdnode *node, const double *pos, double range, 
     int i, ret, added_res = 0;
 
     if(!node) return 0;
-    
+
     /* if the photon is close enough, add it to the result heap */
     dist_sq = 0;
     for(i=0; i<dim; i++) {
@@ -262,7 +262,7 @@ static void kd_nearest_i(struct kdnode *node, const double *pos, struct kdnode *
 
     /* Check the distance of the point at the current node, compare it
      * with our best so far */
-    dist_sq = 0;
+    dist_sq = 0; // this is the distance
     for(i=0; i < rect->dim; i++) {
         dist_sq += SQ(node->pos[i] - pos[i]);
     }
@@ -484,7 +484,7 @@ static int rlist_insert(struct res_node *list, struct kdnode *item, double dist_
 {
     struct res_node *rnode;
 
-    if(!(rnode = new res_node)) { 
+    if(!(rnode = new res_node)) {
         return -1;
     }
     rnode->item = item;

@@ -291,6 +291,25 @@ void RGBDIMAGE::downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
   	}
 }
 
+void RGBDIMAGE::dummyFunc(){
+  Eigen::MatrixXd Jx = Eigen::MatrixXd::Random(5000,6);
+  Eigen::MatrixXd rx = Eigen::MatrixXd::Random(5000,1);
+  Eigen::MatrixXd Jy = Eigen::MatrixXd::Random(5000,6);
+  Eigen::MatrixXd ry = Eigen::MatrixXd::Random(5000,1);
+  Eigen::MatrixXd res,Hx,Hy;
+
+  Eigen::Matrix<double,6,6> HH = Eigen::MatrixXd(6,6);
+
+  for(int k=0;k<30;k++){
+    //Hx = Jx.transpose()*Jx;
+    //Hy = Jy.transpose()*Jy;
+    //res = Hx.inverse()*Jx.transpose()*rx+Hy.inverse()*Jy.transpose()*ry;
+    res=(Jx.transpose()*Jx).inverse()*Jx.transpose()*rx +(Jx.transpose()*Jx).inverse()*Jx.transpose()*rx ;
+  }
+
+
+}
+
 
 /*double interp2(const cv::Mat& img_i, const double& u, const double& v) {
     // 1-based pixel coordinates (u,v) and (x0, y0) / (x1, y1)

@@ -139,6 +139,8 @@ CMakeFiles/exe.dir/src/edge_icp.cpp.o
  ../include/common.h
  ../include/debugging.h
  ../include/edge_icp.h
+ ../include/kdtree.h
+ ../include/kdtree_my.h
  ../include/rgbd_image.h
  ../include/timer.h
  /home/icslkch/Codes/C++/edgeICP/src/edge_icp.cpp
@@ -412,6 +414,8 @@ CMakeFiles/exe.dir/src/kdtree_my.cpp.o
 CMakeFiles/exe.dir/src/main.cpp.o
  ../include/common.h
  ../include/edge_icp.h
+ ../include/kdtree.h
+ ../include/kdtree_my.h
  ../include/rgbd_image.h
  ../include/timer.h
  /home/icslkch/Codes/C++/edgeICP/src/main.cpp

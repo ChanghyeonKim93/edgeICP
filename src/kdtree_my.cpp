@@ -2,7 +2,7 @@
 
 KdtreeMy::KdtreeMy(int dim){
   if(dim<=0) assert(1);
-std::cout<<"kdtree made"<<std::endl;
+std::cout<<" for debug - kdtree made ! size : "<<dim<<std::endl;
   this->kd = kd_create(dim);
 }
 
@@ -11,6 +11,7 @@ if(this->kd != NULL)
   kd_free(this->kd);
 if(this->kd_res != NULL)
   kd_res_free(this->kd_res);
+  std::cout<<"   !!!!! KdtreeMy destruct"<<std::endl;
 }
 
 /*KdtreeMy::kdtreeInsertSinglePoint(double& inputArr){

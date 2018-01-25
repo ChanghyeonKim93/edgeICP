@@ -138,6 +138,8 @@ CMakeFiles/exe.dir/src/debugging.cpp.o: /usr/local/include/opencv2/xfeatures2d/n
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/common.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/debugging.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/edge_icp.h
+CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/kdtree.h
+CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/kdtree_my.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/rgbd_image.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/timer.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../src/edge_icp.cpp
@@ -411,6 +413,8 @@ CMakeFiles/exe.dir/src/kdtree_my.cpp.o: /usr/local/include/opencv2/xfeatures2d/n
 
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/common.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/edge_icp.h
+CMakeFiles/exe.dir/src/main.cpp.o: ../include/kdtree.h
+CMakeFiles/exe.dir/src/main.cpp.o: ../include/kdtree_my.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/rgbd_image.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/timer.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../src/main.cpp

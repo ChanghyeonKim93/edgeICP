@@ -36,39 +36,13 @@ opencv2/highgui/highgui.hpp
 opencv2/features2d/features2d.hpp
 -
 
-../include/debugging.h
+../include/rgbd_image.h
 common.h
 ../include/common.h
 
-../include/edge_icp.h
-common.h
-../include/common.h
+/home/icslkch/Codes/C++/edgeICP/src/rgbd_image.cpp
 rgbd_image.h
-../include/rgbd_image.h
-timer.h
-../include/timer.h
-
-../include/rgbd_image.h
-common.h
-../include/common.h
-
-../include/timer.h
-common.h
-../include/common.h
-time.h
--
-random
--
-chrono
--
-sys/time.h
--
-
-/home/icslkch/Codes/C++/edgeICP/src/edge_icp.cpp
-edge_icp.h
-/home/icslkch/Codes/C++/edgeICP/src/edge_icp.h
-debugging.h
-/home/icslkch/Codes/C++/edgeICP/src/debugging.h
+/home/icslkch/Codes/C++/edgeICP/src/rgbd_image.h
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h
@@ -839,6 +813,14 @@ general.h
 /usr/local/include/opencv2/flann/general.h
 nn_index.h
 /usr/local/include/opencv2/flann/nn_index.h
+
+/usr/local/include/opencv2/flann/timer.h
+time.h
+-
+opencv2/core.hpp
+/usr/local/include/opencv2/flann/opencv2/core.hpp
+opencv2/core/utility.hpp
+/usr/local/include/opencv2/flann/opencv2/core/utility.hpp
 
 /usr/local/include/opencv2/highgui.hpp
 opencv2/core.hpp

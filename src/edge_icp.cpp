@@ -7,7 +7,12 @@ VOEdgeICP::VOEdgeICP(Parameters params):params(params){
 	RGBDIMAGE::dataSyncronize(params.dataset.dataset_name, this->rgb_name_vec, this->depth_name_vec, this->t_cam_vec);
 };
 // deconstructor
-VOEdgeICP::~VOEdgeICP(){};
+VOEdgeICP::~VOEdgeICP(){
+	std::cout<<" !!!!!VOEdgeICP desctruct"<<std::endl;
+
+if(this->curr_tree_4!=NULL)	delete this->curr_tree_4;
+if(this->curr_tree_2!=NULL)	delete this->curr_tree_2;
+};
 
 void VOEdgeICP::setImages(const cv::Mat& img_i, const cv::Mat& depth_i){
   this->curr_img.release();
@@ -26,6 +31,7 @@ void VOEdgeICP::setKeyImages(){
   curr_depth.release();
 	null_vec1.swap(curr_img_vec);
 	null_vec2.swap(curr_depth_vec);
+
 };
 
 void VOEdgeICP::run(){
@@ -51,7 +57,7 @@ void VOEdgeICP::run(){
 	ind = init_num-1;
   while(ind<final_num){
 		// dbg::getImageType(cv::Mat&);
-		toc();
+		//toc();
 		cv::Mat edge_map,dx,dy,d_norm;
 
 		RGBDIMAGE::downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
@@ -64,8 +70,13 @@ void VOEdgeICP::run(){
 
 		RGBDIMAGE::findValidMask(edge_map, this->curr_depth, this->curr_valid_mask,this->curr_valid_num_px); // pixels used as edge pixels.
 		RGBDIMAGE::setEdgePoints(this->curr_valid_mask,dx,dy, this-> curr_valid_num_px,this->curr_pt_u,this->curr_pt_v, this->curr_grad_u,this->curr_grad_v); // made the pts sets.
-		//std::cout<< "NUM OF PTS : "<<this->curr_pt_u.size()<<std::endl;
+		toc();
+		RGBDIMAGE::dummyFunc();
+		// initialize the kdtree
 
+		//this->curr_tree_4 = new KdtreeMy(4);
+		//this->curr_tree_2 = new KdtreeMy(2);
+		//std::cout<<this->curr_tree_4<<std::endl;
 
 		// end of while loop
     ++ind;
@@ -73,10 +84,10 @@ void VOEdgeICP::run(){
 		this->t_save.push_back(this->t_now/1000000.0);
 		std::cout<<" Elapsed time : "<<this->t_save.back() <<" , # of image : "<<ind<<std::endl;
 		// exit the program
-    if((char)cv::waitKey(0)=='q'){
+    /*if((char)cv::waitKey(0)=='q'){
       std::cout<<std::endl<<std::endl;
       std::cout<<" System : Program is halted by command."<<std::endl;
       break;
-    }
+    }*/
   }
 };
