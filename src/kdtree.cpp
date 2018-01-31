@@ -152,7 +152,7 @@ static int find_nearest(struct kdnode *node, const double *pos, double range, st
 
     if(!node) return 0;
 
-    dist_sq = 0; // I THINK THIS IS THE FUNCTION WHICH I HAVE TO MODIFY.
+    dist_sq = 0;
     for(i=0; i<dim; i++) {
         dist_sq += SQ(node->pos[i] - pos[i]);
     }
@@ -165,7 +165,7 @@ static int find_nearest(struct kdnode *node, const double *pos, double range, st
 
     dx = pos[node->dir] - node->pos[node->dir];
 
-    ret = find_nearest(dx <= 0.0 ? node->left : node->right, pos, range, list, ordered, dim);
+    ret = find_nearest(dx <= 0.0 ? node->left : node->right, pos, range, list, ordered, dim);// THIS IS the function which I have to modify.
     if(ret >= 0 && fabs(dx) < range) {
         added_res += ret;
         ret = find_nearest(dx <= 0.0 ? node->right : node->left, pos, range, list, ordered, dim);
@@ -262,7 +262,7 @@ static void kd_nearest_i(struct kdnode *node, const double *pos, struct kdnode *
 
     /* Check the distance of the point at the current node, compare it
      * with our best so far */
-    dist_sq = 0; // this is the distance
+    dist_sq = 0;
     for(i=0; i < rect->dim; i++) {
         dist_sq += SQ(node->pos[i] - pos[i]);
     }
@@ -318,8 +318,16 @@ struct kdres *kd_nearest(struct kdtree *kd, const double *pos)
     /* Our first guesstimate is the root node */
     result = kd->root;
     dist_sq = 0;
-    for (i = 0; i < kd->dim; i++)
+
+    if(kd->dim==4){
+      dist_sq+=(result->pos[0] - pos[0])*(result->pos[0] - pos[0])+(result->pos[1] - pos[1])*(result->pos[1] - pos[1]);
+      dist_sq += 0.7*4.0*(result->pos[i]);
+    }
+    else{
+      for(i=0;i<kd->dim;i++){
         dist_sq += SQ(result->pos[i] - pos[i]);
+      }
+    }
 
     /* Search for the nearest neighbour recursively */
     kd_nearest_i(kd->root, pos, &result, &dist_sq, rect);
@@ -398,7 +406,7 @@ void *kd_res_item(struct kdres *rset, double *pos)
 {
     if(rset->riter) {
         if(pos) {
-            memcpy(pos, rset->riter->item->pos, rset->tree->dim * sizeof *pos);
+            memcpy(pos, rset->riter->item->pos, rset->tree->dim * sizeof(*pos) );
         }
         return rset->riter->item->data;
     }

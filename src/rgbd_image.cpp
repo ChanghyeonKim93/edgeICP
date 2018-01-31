@@ -211,6 +211,7 @@ void RGBDIMAGE::findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& im
     uchar* edge_ptr = edge_map.ptr<uchar>(v);
     double* depth_ptr = depth_map.ptr<double>(v);
     uchar* temp_ptr = temp.ptr<uchar>(v);
+
     for(int u = 0; u<edge_map.cols; u++){
       if(*(edge_ptr++) > 0 & *(depth_ptr++) > 0){
         *(temp_ptr++) = 255;
@@ -224,23 +225,26 @@ void RGBDIMAGE::findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& im
   temp.copyTo(img_o); // output : valid pixel mask cv::Mat image
 }
 
-void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& grad_y, int& valid_num, Eigen::VectorXd& arr_u,Eigen::VectorXd& arr_v, Eigen::VectorXd& arr_grad_u,Eigen::VectorXd&arr_grad_v){//input : valid mask(Mat), ptr (Eigen::data()) row major
-  arr_u.resize(valid_num);
-  arr_v.resize(valid_num);
-  arr_grad_u.resize(valid_num);
-  arr_grad_v.resize(valid_num);
-
+void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& grad_y, int& valid_num, std::vector<double>& arr_u, std::vector<double>& arr_v, std::vector<double>& arr_grad_u, std::vector<double>&arr_grad_v){//input : valid mask(Mat), ptr (Eigen::data()) row major
+  arr_u.resize(0); // initialize
+  arr_v.resize(0);
+  arr_grad_u.resize(0);
+  arr_grad_v.resize(0);
   int ind = 0;
   for(int v = 0;v<valid_mask.rows;v++){
     uchar* valid_mask_ptr = valid_mask.ptr<uchar>(v);
     double* grad_x_ptr = grad_x.ptr<double>(v);
     double* grad_y_ptr = grad_y.ptr<double>(v);
+
     for(int u = 0; u<valid_mask.cols;u++){
+    //  std::cout<<(int)*(valid_mask_ptr++)<<std::endl;
       if(*(valid_mask_ptr++)==255){
-        arr_u(ind)=u;
-        arr_v(ind)=v;
-        arr_grad_u(ind)=*(grad_x_ptr+u);
-        arr_grad_v(ind)=*(grad_y_ptr+u);
+      //  std::cout<<"in " <<u<<" , "<<v<<std::endl;
+        arr_u.push_back(u);
+        arr_v.push_back(v);
+        arr_grad_u.push_back(*(grad_x_ptr+u));
+        arr_grad_v.push_back(*(grad_y_ptr+u));
+        //arr_grad_v(ind)=*(grad_y_ptr+u);
         ind++;
       }
     }

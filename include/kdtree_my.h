@@ -7,12 +7,19 @@ class KdtreeMy{
 public:
 KdtreeMy(int dim); // construct kdtree, input : dimension
 ~KdtreeMy(); // destruct kdtree
-//kdtreeInsertSinglePoint(double&);
+
+// Member methods
+void initialize();
+void insertSinglePoint(double* );
+void findNearest(double* );
+void printResSize();
+void printNearestPoint();
 //kdtreeInsertMultiplePoints(double&);
 
 private:
  kdtree* kd;
  kdres* kd_res;
+ int dim;
 
 };
 

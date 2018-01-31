@@ -79,12 +79,12 @@ private:
   // pixel containers
   std::vector<cv::Point2d> curr_edge_px;
   std::vector<cv::Point2d> key_edge_px; // for release the vector, vector.resize(0);
-  Eigen::VectorXd curr_pt_u,curr_pt_v, key_pt_u,key_pt_v;
-  Eigen::VectorXd curr_grad_u,curr_grad_v, key_grad_u,key_grad_v;
+  std::vector<double> curr_pt_u,curr_pt_v, key_pt_u,key_pt_v;
+  std::vector<double> curr_grad_u,curr_grad_v, key_grad_u,key_grad_v;
 
   // kd tree
-  KdtreeMy* curr_tree_4;
-  KdtreeMy* curr_tree_2;
+  KdtreeMy* key_tree_4;
+  KdtreeMy* key_tree_2;
 
 };
 

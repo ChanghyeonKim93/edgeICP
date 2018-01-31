@@ -10,8 +10,8 @@ VOEdgeICP::VOEdgeICP(Parameters params):params(params){
 VOEdgeICP::~VOEdgeICP(){
 	std::cout<<" !!!!!VOEdgeICP desctruct"<<std::endl;
 
-if(this->curr_tree_4!=NULL)	delete this->curr_tree_4;
-if(this->curr_tree_2!=NULL)	delete this->curr_tree_2;
+if(this->key_tree_4!=NULL)	delete this->key_tree_4;
+if(this->key_tree_2!=NULL)	delete this->key_tree_2;
 };
 
 void VOEdgeICP::setImages(const cv::Mat& img_i, const cv::Mat& depth_i){
@@ -59,8 +59,47 @@ void VOEdgeICP::run(){
 		// dbg::getImageType(cv::Mat&);
 		//toc();
 		cv::Mat edge_map,dx,dy,d_norm;
+		if(ind==init_num-1){			// for first keyframe initialization.
+			std::cout<<"keyframe initialize"<<std::endl;
+			RGBDIMAGE::downSampleImage(this->curr_img_vec[ind],this->key_img);
+			RGBDIMAGE::downSampleDepth(this->curr_depth_vec[ind], this->key_depth); // downsample depth
+			RGBDIMAGE::calcDerivX(this->key_img, dx); // gradient map
+			RGBDIMAGE::calcDerivY(this->key_img, dy);
+			RGBDIMAGE::calcDerivNorm(dx,dy,d_norm,dx,dy);
+			cv::Canny(this->key_img,edge_map,170,220);
+			RGBDIMAGE::findValidMask(edge_map, this->key_depth, this->key_valid_mask,this->key_valid_num_px); // pixels used as edge pixels.
+			RGBDIMAGE::setEdgePoints(this->key_valid_mask,dx,dy, this-> key_valid_num_px, this->key_pt_u,this->key_pt_v, this->key_grad_u,this->key_grad_v); // made the pts sets.
+			//std::cout<<"vector size :"<<this->key_pt_u.size()<<" "<<sizeof*(&this->key_pt_u+1)<<std::endl;
+			// initialize the kdtree
 
-		RGBDIMAGE::downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
+			this->key_tree_4 = new KdtreeMy(4);
+			this->key_tree_2 = new KdtreeMy(2);
+			this->key_tree_2->initialize();
+			for(int k=0;k<key_pt_u.size();k++){
+				// inserting iteratively.
+				double temp[2];
+				*temp = key_pt_u[k];
+				*(temp+1) = key_pt_v[k];
+				//std::cout<<*temp<<","<<*(temp+1)<<std::endl;
+				this->key_tree_2->insertSinglePoint(temp);
+			}
+			std::cout<<"out"<<std::endl;
+			/*double pos1[4] = {0.5,0.0,0.0,0.0};
+			double pos2[4] = {0.0,0.5,0.0,0.0};
+			double pos3[4] = {0.0,0.0,0.0,0.0};
+			double near_pos[4] = {-0.1,-0.6,0.0,0.0};
+			this->key_tree_2->insertSinglePoint(pos1);
+			this->key_tree_2->insertSinglePoint(pos2);
+			this->key_tree_2->insertSinglePoint(pos3);
+			this->key_tree_2->findNearest(near_pos);
+			*/
+			//this->key_tree_2->printResSize();
+			//this->key_tree_2->printNearestPoint();
+			//std::cout<<this->curr_tree_4<<std::endl;
+		}
+
+		toc();
+		/*RGBDIMAGE::downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
 		RGBDIMAGE::downSampleDepth(this->curr_depth_vec[ind], this->curr_depth); // downsample depth
 
 		RGBDIMAGE::calcDerivX(this->curr_img, dx); // gradient map
@@ -69,14 +108,10 @@ void VOEdgeICP::run(){
 		cv::Canny(this->curr_img,edge_map,170,220); // heuristic, Canny accepts CV_8U only.
 
 		RGBDIMAGE::findValidMask(edge_map, this->curr_depth, this->curr_valid_mask,this->curr_valid_num_px); // pixels used as edge pixels.
-		RGBDIMAGE::setEdgePoints(this->curr_valid_mask,dx,dy, this-> curr_valid_num_px,this->curr_pt_u,this->curr_pt_v, this->curr_grad_u,this->curr_grad_v); // made the pts sets.
-		toc();
-		RGBDIMAGE::dummyFunc();
-		// initialize the kdtree
+		RGBDIMAGE::setEdgePoints(this->curr_valid_mask,dx,dy, this-> curr_valid_num_px, this->curr_pt_u,this->curr_pt_v, this->curr_grad_u,this->curr_grad_v); // made the pts sets.
+*/
+		//RGBDIMAGE::dummyFunc();
 
-		//this->curr_tree_4 = new KdtreeMy(4);
-		//this->curr_tree_2 = new KdtreeMy(2);
-		//std::cout<<this->curr_tree_4<<std::endl;
 
 		// end of while loop
     ++ind;

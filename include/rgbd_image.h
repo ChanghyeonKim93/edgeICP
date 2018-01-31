@@ -14,7 +14,7 @@ namespace RGBDIMAGE{
   void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&);
   void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&);
   void findValidMask(cv::Mat&, cv::Mat&, cv::Mat&, int&);
-  void setEdgePoints(cv::Mat&,cv::Mat&,cv::Mat&, int&, Eigen::VectorXd&,Eigen::VectorXd&,Eigen::VectorXd&,Eigen::VectorXd&);
+  void setEdgePoints(cv::Mat&,cv::Mat&,cv::Mat&, int&, std::vector<double>&, std::vector<double>&,std::vector<double>&, std::vector<double>&);
   void dummyFunc();
   // not use
   void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o);
