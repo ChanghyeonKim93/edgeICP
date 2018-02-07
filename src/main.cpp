@@ -3,6 +3,8 @@
 #include "timer.h"
 #include "edge_icp.h"
 #include "rgbd_image.h"
+#include "KDTree.h"
+
 
 int main(void){
 //=========================================
@@ -28,7 +30,7 @@ int main(void){
 	std::cout<<" Memory is released."<<std::endl;
 
 //=========================================
-	std::cout<<std::endl<<std::endl<<std::endl;
+	std::cout<<"\n\n\n\n\n";
 //=========================================
 	return 0;
 }

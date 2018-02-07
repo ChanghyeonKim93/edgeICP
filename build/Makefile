@@ -111,6 +111,30 @@ exe/fast:
 	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/build
 .PHONY : exe/fast
 
+src/KDTree.o: src/KDTree.cpp.o
+.PHONY : src/KDTree.o
+
+# target to build an object file
+src/KDTree.cpp.o:
+	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/KDTree.cpp.o
+.PHONY : src/KDTree.cpp.o
+
+src/KDTree.i: src/KDTree.cpp.i
+.PHONY : src/KDTree.i
+
+# target to preprocess a source file
+src/KDTree.cpp.i:
+	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/KDTree.cpp.i
+.PHONY : src/KDTree.cpp.i
+
+src/KDTree.s: src/KDTree.cpp.s
+.PHONY : src/KDTree.s
+
+# target to generate assembly for a file
+src/KDTree.cpp.s:
+	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/KDTree.cpp.s
+.PHONY : src/KDTree.cpp.s
+
 src/debugging.o: src/debugging.cpp.o
 .PHONY : src/debugging.o
 
@@ -158,54 +182,6 @@ src/edge_icp.s: src/edge_icp.cpp.s
 src/edge_icp.cpp.s:
 	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/edge_icp.cpp.s
 .PHONY : src/edge_icp.cpp.s
-
-src/kdtree.o: src/kdtree.cpp.o
-.PHONY : src/kdtree.o
-
-# target to build an object file
-src/kdtree.cpp.o:
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree.cpp.o
-.PHONY : src/kdtree.cpp.o
-
-src/kdtree.i: src/kdtree.cpp.i
-.PHONY : src/kdtree.i
-
-# target to preprocess a source file
-src/kdtree.cpp.i:
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree.cpp.i
-.PHONY : src/kdtree.cpp.i
-
-src/kdtree.s: src/kdtree.cpp.s
-.PHONY : src/kdtree.s
-
-# target to generate assembly for a file
-src/kdtree.cpp.s:
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree.cpp.s
-.PHONY : src/kdtree.cpp.s
-
-src/kdtree_my.o: src/kdtree_my.cpp.o
-.PHONY : src/kdtree_my.o
-
-# target to build an object file
-src/kdtree_my.cpp.o:
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree_my.cpp.o
-.PHONY : src/kdtree_my.cpp.o
-
-src/kdtree_my.i: src/kdtree_my.cpp.i
-.PHONY : src/kdtree_my.i
-
-# target to preprocess a source file
-src/kdtree_my.cpp.i:
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree_my.cpp.i
-.PHONY : src/kdtree_my.cpp.i
-
-src/kdtree_my.s: src/kdtree_my.cpp.s
-.PHONY : src/kdtree_my.s
-
-# target to generate assembly for a file
-src/kdtree_my.cpp.s:
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree_my.cpp.s
-.PHONY : src/kdtree_my.cpp.s
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -288,18 +264,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... exe"
 	@echo "... rebuild_cache"
+	@echo "... src/KDTree.o"
+	@echo "... src/KDTree.i"
+	@echo "... src/KDTree.s"
 	@echo "... src/debugging.o"
 	@echo "... src/debugging.i"
 	@echo "... src/debugging.s"
 	@echo "... src/edge_icp.o"
 	@echo "... src/edge_icp.i"
 	@echo "... src/edge_icp.s"
-	@echo "... src/kdtree.o"
-	@echo "... src/kdtree.i"
-	@echo "... src/kdtree.s"
-	@echo "... src/kdtree_my.o"
-	@echo "... src/kdtree_my.i"
-	@echo "... src/kdtree_my.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

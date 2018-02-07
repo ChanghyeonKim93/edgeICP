@@ -164,51 +164,28 @@ CMakeFiles/exe.dir/src/debugging.cpp.o.provides: CMakeFiles/exe.dir/src/debuggin
 
 CMakeFiles/exe.dir/src/debugging.cpp.o.provides.build: CMakeFiles/exe.dir/src/debugging.cpp.o
 
-CMakeFiles/exe.dir/src/kdtree.cpp.o: CMakeFiles/exe.dir/flags.make
-CMakeFiles/exe.dir/src/kdtree.cpp.o: ../src/kdtree.cpp
+CMakeFiles/exe.dir/src/KDTree.cpp.o: CMakeFiles/exe.dir/flags.make
+CMakeFiles/exe.dir/src/KDTree.cpp.o: ../src/KDTree.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/icslkch/Codes/C++/edgeICP/build/CMakeFiles $(CMAKE_PROGRESS_6)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/exe.dir/src/kdtree.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/exe.dir/src/kdtree.cpp.o -c /home/icslkch/Codes/C++/edgeICP/src/kdtree.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/exe.dir/src/KDTree.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/exe.dir/src/KDTree.cpp.o -c /home/icslkch/Codes/C++/edgeICP/src/KDTree.cpp
 
-CMakeFiles/exe.dir/src/kdtree.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/exe.dir/src/kdtree.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/icslkch/Codes/C++/edgeICP/src/kdtree.cpp > CMakeFiles/exe.dir/src/kdtree.cpp.i
+CMakeFiles/exe.dir/src/KDTree.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/exe.dir/src/KDTree.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/icslkch/Codes/C++/edgeICP/src/KDTree.cpp > CMakeFiles/exe.dir/src/KDTree.cpp.i
 
-CMakeFiles/exe.dir/src/kdtree.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/exe.dir/src/kdtree.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/icslkch/Codes/C++/edgeICP/src/kdtree.cpp -o CMakeFiles/exe.dir/src/kdtree.cpp.s
+CMakeFiles/exe.dir/src/KDTree.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/exe.dir/src/KDTree.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/icslkch/Codes/C++/edgeICP/src/KDTree.cpp -o CMakeFiles/exe.dir/src/KDTree.cpp.s
 
-CMakeFiles/exe.dir/src/kdtree.cpp.o.requires:
-.PHONY : CMakeFiles/exe.dir/src/kdtree.cpp.o.requires
+CMakeFiles/exe.dir/src/KDTree.cpp.o.requires:
+.PHONY : CMakeFiles/exe.dir/src/KDTree.cpp.o.requires
 
-CMakeFiles/exe.dir/src/kdtree.cpp.o.provides: CMakeFiles/exe.dir/src/kdtree.cpp.o.requires
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree.cpp.o.provides.build
-.PHONY : CMakeFiles/exe.dir/src/kdtree.cpp.o.provides
+CMakeFiles/exe.dir/src/KDTree.cpp.o.provides: CMakeFiles/exe.dir/src/KDTree.cpp.o.requires
+	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/KDTree.cpp.o.provides.build
+.PHONY : CMakeFiles/exe.dir/src/KDTree.cpp.o.provides
 
-CMakeFiles/exe.dir/src/kdtree.cpp.o.provides.build: CMakeFiles/exe.dir/src/kdtree.cpp.o
-
-CMakeFiles/exe.dir/src/kdtree_my.cpp.o: CMakeFiles/exe.dir/flags.make
-CMakeFiles/exe.dir/src/kdtree_my.cpp.o: ../src/kdtree_my.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/icslkch/Codes/C++/edgeICP/build/CMakeFiles $(CMAKE_PROGRESS_7)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/exe.dir/src/kdtree_my.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/exe.dir/src/kdtree_my.cpp.o -c /home/icslkch/Codes/C++/edgeICP/src/kdtree_my.cpp
-
-CMakeFiles/exe.dir/src/kdtree_my.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/exe.dir/src/kdtree_my.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/icslkch/Codes/C++/edgeICP/src/kdtree_my.cpp > CMakeFiles/exe.dir/src/kdtree_my.cpp.i
-
-CMakeFiles/exe.dir/src/kdtree_my.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/exe.dir/src/kdtree_my.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/icslkch/Codes/C++/edgeICP/src/kdtree_my.cpp -o CMakeFiles/exe.dir/src/kdtree_my.cpp.s
-
-CMakeFiles/exe.dir/src/kdtree_my.cpp.o.requires:
-.PHONY : CMakeFiles/exe.dir/src/kdtree_my.cpp.o.requires
-
-CMakeFiles/exe.dir/src/kdtree_my.cpp.o.provides: CMakeFiles/exe.dir/src/kdtree_my.cpp.o.requires
-	$(MAKE) -f CMakeFiles/exe.dir/build.make CMakeFiles/exe.dir/src/kdtree_my.cpp.o.provides.build
-.PHONY : CMakeFiles/exe.dir/src/kdtree_my.cpp.o.provides
-
-CMakeFiles/exe.dir/src/kdtree_my.cpp.o.provides.build: CMakeFiles/exe.dir/src/kdtree_my.cpp.o
+CMakeFiles/exe.dir/src/KDTree.cpp.o.provides.build: CMakeFiles/exe.dir/src/KDTree.cpp.o
 
 # Object files for target exe
 exe_OBJECTS = \
@@ -217,8 +194,7 @@ exe_OBJECTS = \
 "CMakeFiles/exe.dir/src/edge_icp.cpp.o" \
 "CMakeFiles/exe.dir/src/rgbd_image.cpp.o" \
 "CMakeFiles/exe.dir/src/debugging.cpp.o" \
-"CMakeFiles/exe.dir/src/kdtree.cpp.o" \
-"CMakeFiles/exe.dir/src/kdtree_my.cpp.o"
+"CMakeFiles/exe.dir/src/KDTree.cpp.o"
 
 # External object files for target exe
 exe_EXTERNAL_OBJECTS =
@@ -228,8 +204,7 @@ exe: CMakeFiles/exe.dir/src/timer.cpp.o
 exe: CMakeFiles/exe.dir/src/edge_icp.cpp.o
 exe: CMakeFiles/exe.dir/src/rgbd_image.cpp.o
 exe: CMakeFiles/exe.dir/src/debugging.cpp.o
-exe: CMakeFiles/exe.dir/src/kdtree.cpp.o
-exe: CMakeFiles/exe.dir/src/kdtree_my.cpp.o
+exe: CMakeFiles/exe.dir/src/KDTree.cpp.o
 exe: CMakeFiles/exe.dir/build.make
 exe: /usr/local/lib/x86_64-linux-gnu/libopencv_calib3d.so.3.4.0
 exe: /usr/local/lib/x86_64-linux-gnu/libopencv_core.so.3.4.0
@@ -306,8 +281,7 @@ CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/timer.cpp.o.requires
 CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/edge_icp.cpp.o.requires
 CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/rgbd_image.cpp.o.requires
 CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/debugging.cpp.o.requires
-CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/kdtree.cpp.o.requires
-CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/kdtree_my.cpp.o.requires
+CMakeFiles/exe.dir/requires: CMakeFiles/exe.dir/src/KDTree.cpp.o.requires
 .PHONY : CMakeFiles/exe.dir/requires
 
 CMakeFiles/exe.dir/clean:

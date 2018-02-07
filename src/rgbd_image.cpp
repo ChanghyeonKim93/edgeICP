@@ -251,49 +251,7 @@ void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& gra
   }
 }
 
-
-
-
 // not use
-
-void RGBDIMAGE::calcDerivX2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
-    img_o.create(img_i.size(), CV_64F);
-    int prev = 0, next = 0;
-    for(int y = 0; y < img_i.rows; ++y) {
-        for(int x = 0; x < img_i.cols; ++x) {
-            prev = std::max(x - 1, 0);
-            next = std::min(x + 1, img_i.cols - 1);
-            img_o.at<double>(y, x) = ( (img_i.at<uchar>(y, next) - img_i.at<uchar>(y, prev)) * 0.5f );
-        }
-    }
-}
-
-void RGBDIMAGE::calcDerivY2(cv::Mat& img_i, cv::Mat& img_o) { // TOO SLOW ! SLOWER than ptr access
-    img_o.create(img_i.size(), CV_64F);
-    int prev = 0, next = 0;
-    for(int y = 0; y < img_i.rows; ++y) {
-        for(int x = 0; x < img_i.cols; ++x) {
-            prev = std::max(y - 1, 0);
-            next = std::min(y + 1, img_i.rows - 1);
-
-            img_o.at<double>(y, x) = ((img_i.at<uchar>(next, x) - img_i.at<uchar>(prev, x)) * 0.5f );
-        }
-    }
-}
-
-void RGBDIMAGE::downSampleImage2(cv::Mat& img_i, cv::Mat& img_o) {
-    img_o.create(cv::Size(img_i.cols / 2, img_i.rows / 2), img_i.type());
-    int x0, x1, y0, y1;
-  	for (int y=0;y<img_o.rows;++y){
-  		for(int x=0;x<img_o.cols;++x){
-  			x0 = x * 2;
-  			x1 = x0 + 1;
-  			y0 = y * 2;
-  			y1 = y0 + 1;
-  			img_o.at<double>(y,x) = (img_i.at<double>(y0,x0) + img_i.at<double>(y0,x1) + img_i.at<double>(y1,x0) + img_i.at<double>(y1,x1)) / 4.0;
-  		}
-  	}
-}
 
 void RGBDIMAGE::dummyFunc(){
   Eigen::MatrixXd Jx = Eigen::MatrixXd::Random(5000,6);

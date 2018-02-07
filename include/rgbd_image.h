@@ -17,10 +17,6 @@ namespace RGBDIMAGE{
   void setEdgePoints(cv::Mat&,cv::Mat&,cv::Mat&, int&, std::vector<double>&, std::vector<double>&,std::vector<double>&, std::vector<double>&);
   void dummyFunc();
   // not use
-  void downSampleImage2(cv::Mat& img_i, cv::Mat& img_o);
-  void calcDerivX2(cv::Mat&, cv::Mat&);
-  void calcDerivY2(cv::Mat&, cv::Mat&);
-
 };
 
 

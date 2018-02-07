@@ -3,7 +3,11 @@
 #include "common.h"
 #include "rgbd_image.h"
 #include "timer.h"
-#include "kdtree_my.h"
+#include "KDTree.h"
+
+typedef std::vector<double> Point_2d;
+typedef std::vector<double> Point_3d;
+typedef std::vector<double> Point_4d;
 
 class VOEdgeICP{
 
@@ -32,7 +36,7 @@ public:
     Depth(){//constructor
       scale = 1.0/5000.0;
       min = 0.5; // 50cm
-      min = 4.0; // 400cm
+      min = 5.0; // 400cm
     }
   };
   struct Dataset{
@@ -66,25 +70,27 @@ private:
 	std::vector<double> t_cam_vec;
 
   // current and key images
-  cv::Mat curr_img, curr_depth; // current image Mat
+  cv::Mat cur_img, cur_depth; // curent image Mat
   cv::Mat key_img, key_depth; // key image Mat
-  cv::Mat curr_valid_mask, key_valid_mask; // curr & key image valid mask
-  int curr_valid_num_px, key_valid_num_px;
-  std::vector<cv::Mat> curr_img_vec, curr_depth_vec; //
+  cv::Mat cur_valid_mask, key_valid_mask; // cur & key image valid mask
+  int cur_valid_num_px, key_valid_num_px;
+  std::vector<cv::Mat> cur_img_vec, cur_depth_vec; //
 
   // time related
   unsigned long t_now;
   std::vector<double> t_save;
 
   // pixel containers
-  std::vector<cv::Point2d> curr_edge_px;
-  std::vector<cv::Point2d> key_edge_px; // for release the vector, vector.resize(0);
-  std::vector<double> curr_pt_u,curr_pt_v, key_pt_u,key_pt_v;
-  std::vector<double> curr_grad_u,curr_grad_v, key_grad_u,key_grad_v;
+  std::vector<Point_2d> cur_edge_px, key_edge_px; // for release the vector, vector.resize(0);
+  std::vector<double> cur_pt_u,cur_pt_v, key_pt_u,key_pt_v;
+  std::vector<double> cur_grad_u,cur_grad_v, key_grad_u,key_grad_v;
+  std::vector<int> ref_ind;
+  // KDTree
+  KDTree* key_tree_2;
+  KDTree* key_tree_4;
 
-  // kd tree
-  KdtreeMy* key_tree_4;
-  KdtreeMy* key_tree_2;
+  // debug
+  cv::Mat debug_img;
 
 };
 

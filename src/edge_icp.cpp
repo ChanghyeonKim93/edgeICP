@@ -8,111 +8,167 @@ VOEdgeICP::VOEdgeICP(Parameters params):params(params){
 };
 // deconstructor
 VOEdgeICP::~VOEdgeICP(){
+	delete this->key_tree_2;
+	delete this->key_tree_4;
 	std::cout<<" !!!!!VOEdgeICP desctruct"<<std::endl;
-
-if(this->key_tree_4!=NULL)	delete this->key_tree_4;
-if(this->key_tree_2!=NULL)	delete this->key_tree_2;
 };
 
 void VOEdgeICP::setImages(const cv::Mat& img_i, const cv::Mat& depth_i){
-  this->curr_img.release();
-  this->curr_depth.release();
-  img_i.copyTo(this->curr_img);
-  depth_i.copyTo(this->curr_depth);
+  this->cur_img.release();
+  this->cur_depth.release();
+  img_i.copyTo(this->cur_img);
+  depth_i.copyTo(this->cur_depth);
 };
 
 void VOEdgeICP::setKeyImages(){
 	std::vector<cv::Mat> null_vec1, null_vec2;
 
-  curr_img.copyTo(key_img);
-  curr_depth.copyTo(key_depth);
+  cur_img.copyTo(key_img);
+  cur_depth.copyTo(key_depth);
 
-  curr_img.release();
-  curr_depth.release();
-	null_vec1.swap(curr_img_vec);
-	null_vec2.swap(curr_depth_vec);
+  cur_img.release();
+  cur_depth.release();
+	null_vec1.swap(cur_img_vec);
+	null_vec2.swap(cur_depth_vec);
 
 };
 
+// run function
+
 void VOEdgeICP::run(){
   // iterative part
-  cv::namedWindow("debug_img",CV_WINDOW_AUTOSIZE);
-  int init_num = 1, final_num=16
-	;
+  cv::namedWindow("debug",CV_WINDOW_AUTOSIZE);
+  int init_num = 1, final_num=16;
   int ind = init_num-1;
-	// read all dataset
+
+	int N_sample = 500;
+	int max_num_of_icp_iter = 30;
+	int dist_thres = 15; // pixels
+	double trans_thres = 0.02; // 2cm
+	double rot_thres = 3; // 3 degree
+
+	std::vector<Point_2d> temp2d_vec,null_vec;
+	std::vector<Point_4d> temp4d_vec;
+
+	// 1. read all dataset
 	while(ind < final_num){
 		cv::Mat img_temp,depth_temp;
 		RGBDIMAGE::getImage(this->rgb_name_vec[ind], this->depth_name_vec[ind], this->params.depth.scale, img_temp, depth_temp);
-		this->curr_img_vec.push_back(img_temp);
-		this->curr_depth_vec.push_back(depth_temp);
+		this->cur_img_vec.push_back(img_temp);
+		this->cur_depth_vec.push_back(depth_temp);
 		img_temp.release();
 		depth_temp.release();
 		++ind;
 	}
 	std::cout<<" Image loading done"<<std::endl<<std::endl;
-	cv::waitKey(2000);
+	cv::waitKey(3*1000);
 
-	// algorithm part
+	// 2. algorithm part
 	ind = init_num-1;
   while(ind<final_num){
-		// dbg::getImageType(cv::Mat&);
-		//toc();
-		cv::Mat edge_map,dx,dy,d_norm;
+		cv::Mat edge_map, dx, dy, d_norm;
+
+		toc();
 		if(ind==init_num-1){			// for first keyframe initialization.
 			std::cout<<"keyframe initialize"<<std::endl;
-			RGBDIMAGE::downSampleImage(this->curr_img_vec[ind],this->key_img);
-			RGBDIMAGE::downSampleDepth(this->curr_depth_vec[ind], this->key_depth); // downsample depth
+			RGBDIMAGE::downSampleImage(this->cur_img_vec[ind],this->key_img);
+			RGBDIMAGE::downSampleDepth(this->cur_depth_vec[ind], this->key_depth); // downsample depth
 			RGBDIMAGE::calcDerivX(this->key_img, dx); // gradient map
 			RGBDIMAGE::calcDerivY(this->key_img, dy);
 			RGBDIMAGE::calcDerivNorm(dx,dy,d_norm,dx,dy);
+
 			cv::Canny(this->key_img,edge_map,170,220);
 			RGBDIMAGE::findValidMask(edge_map, this->key_depth, this->key_valid_mask,this->key_valid_num_px); // pixels used as edge pixels.
-			RGBDIMAGE::setEdgePoints(this->key_valid_mask,dx,dy, this-> key_valid_num_px, this->key_pt_u,this->key_pt_v, this->key_grad_u,this->key_grad_v); // made the pts sets.
-			//std::cout<<"vector size :"<<this->key_pt_u.size()<<" "<<sizeof*(&this->key_pt_u+1)<<std::endl;
-			// initialize the kdtree
+			RGBDIMAGE::setEdgePoints(this->key_valid_mask, dx, dy, this-> key_valid_num_px, this->key_pt_u, this->key_pt_v, this->key_grad_u, this->key_grad_v); // made the pts sets.
 
-			this->key_tree_4 = new KdtreeMy(4);
-			this->key_tree_2 = new KdtreeMy(2);
-			this->key_tree_2->initialize();
-			for(int k=0;k<key_pt_u.size();k++){
-				// inserting iteratively.
-				double temp[2];
-				*temp = key_pt_u[k];
-				*(temp+1) = key_pt_v[k];
-				//std::cout<<*temp<<","<<*(temp+1)<<std::endl;
-				this->key_tree_2->insertSinglePoint(temp);
+// insert points 2d
+			for(int k=0; k<this->key_pt_u.size(); k++){
+				Point_2d temp2d;
+				temp2d.push_back(this->key_pt_u[k]/320.0);
+				temp2d.push_back(this->key_pt_v[k]/320.0);
+				temp2d_vec.push_back(temp2d);
 			}
-			std::cout<<"out"<<std::endl;
-			/*double pos1[4] = {0.5,0.0,0.0,0.0};
-			double pos2[4] = {0.0,0.5,0.0,0.0};
-			double pos3[4] = {0.0,0.0,0.0,0.0};
-			double near_pos[4] = {-0.1,-0.6,0.0,0.0};
-			this->key_tree_2->insertSinglePoint(pos1);
-			this->key_tree_2->insertSinglePoint(pos2);
-			this->key_tree_2->insertSinglePoint(pos3);
-			this->key_tree_2->findNearest(near_pos);
-			*/
-			//this->key_tree_2->printResSize();
-			//this->key_tree_2->printNearestPoint();
-			//std::cout<<this->curr_tree_4<<std::endl;
+			key_tree_2 = new KDTree( temp2d_vec );
+			temp2d_vec.swap(null_vec);
+
+// insert points 4d
+			for(int k=0; k<this->key_pt_u.size(); k++){
+				Point_4d temp4d;
+				temp4d.push_back(this->key_pt_u[k]/320.0);
+				temp4d.push_back(this->key_pt_v[k]/320.0);
+				temp4d.push_back(this->key_grad_u[k]);
+				temp4d.push_back(this->key_grad_v[k]);
+				temp4d_vec.push_back(temp4d);
+			}
+		  key_tree_4 = new KDTree( temp4d_vec );
+			temp4d_vec.swap(null_vec);
+
+			ind++;
 		}
 
-		toc();
-		/*RGBDIMAGE::downSampleImage(this->curr_img_vec[ind], this->curr_img); // downsample image
-		RGBDIMAGE::downSampleDepth(this->curr_depth_vec[ind], this->curr_depth); // downsample depth
+		// find 3d motion from curent image stream.
+		RGBDIMAGE::downSampleImage(this->cur_img_vec[ind],this->cur_img);
+		RGBDIMAGE::downSampleDepth(this->cur_depth_vec[ind], this->cur_depth); // downsample depth
+		RGBDIMAGE::calcDerivX(this->cur_img, dx); // gradient map
+		RGBDIMAGE::calcDerivY(this->cur_img, dy);
+		RGBDIMAGE::calcDerivNorm(dx, dy, d_norm, dx, dy);
 
-		RGBDIMAGE::calcDerivX(this->curr_img, dx); // gradient map
-		RGBDIMAGE::calcDerivY(this->curr_img, dy);
-		RGBDIMAGE::calcDerivNorm(dx,dy,d_norm,dx,dy);
-		cv::Canny(this->curr_img,edge_map,170,220); // heuristic, Canny accepts CV_8U only.
+		cv::Canny(this->cur_img,edge_map,170,220);
+		RGBDIMAGE::findValidMask(edge_map, this->cur_depth, this->cur_valid_mask,this->cur_valid_num_px); // pixels used as edge pixels.
+		RGBDIMAGE::setEdgePoints(this->cur_valid_mask, dx, dy, this-> cur_valid_num_px, this->cur_pt_u, this->cur_pt_v, this->cur_grad_u, this->cur_grad_v); // made the pts sets.
 
-		RGBDIMAGE::findValidMask(edge_map, this->curr_depth, this->curr_valid_mask,this->curr_valid_num_px); // pixels used as edge pixels.
-		RGBDIMAGE::setEdgePoints(this->curr_valid_mask,dx,dy, this-> curr_valid_num_px, this->curr_pt_u,this->curr_pt_v, this->curr_grad_u,this->curr_grad_v); // made the pts sets.
-*/
-		//RGBDIMAGE::dummyFunc();
+		std::cout<<" # of curr pts before sampling : " <<cur_pt_u.size()<<std::endl;
+
+		// 3. iteration part
+		int icp_iter = 1;
+		Point_2d temp2d;
+		temp2d.push_back(this->cur_pt_u[0]/320.0);
+		temp2d.push_back(this->cur_pt_v[0]/320.0);
+		while(icp_iter <=max_num_of_icp_iter){
+			// warp_pts
+
+			if(icp_iter<=6){
+				// 4d finding
+				// find nearest pixels.
+				for(int k=0; k<N_sample; k++){
+
+					//std::cout<<"1 : "<<*(&temp2d)<<", 2 : "<<*(&temp2d+1)<<std::endl;
+					int idx_close = key_tree_2->closest_point(temp2d);
+					this->ref_ind.push_back(idx_close);
+					//std::cout<<"closest : "<<idx_close1<<std::endl;
+				}
+				std::vector<int> null_int_vec;
+				this->ref_ind.swap(null_int_vec);
+			}
+			else{
+   	    // 2d finding
+				// find nearest pixels.
+				for(int k=0; k<N_sample; k++){
+
+					int idx_close = key_tree_2->closest_point(temp2d);
+					this->ref_ind.push_back(idx_close);
+					//std::cout<<"closest : "<<idx_close1<<std::endl;
+				}
+				std::vector<int> null_int_vec;
+				this->ref_ind.swap(null_int_vec);
+			}
+
+			icp_iter++;
+		}
 
 
+//------------------------------------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------- end of program ----------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------------------------------------------------//
+// debug part
+		debug_img = this->cur_img_vec[ind].clone();
+		char debug_str[100];
+		sprintf(debug_str,"The number of image : %d",ind);
+		double font_scale=0.7;
+		cv::Scalar font_color = CV_RGB(0,0,0);
+		int font_thickness = 2.8;
+		cv::putText(debug_img,debug_str,cv::Point2f(5,240-5),cv::FONT_HERSHEY_TRIPLEX,font_scale,font_color,font_thickness);
+		cv::imshow("debug",debug_img);
 		// end of while loop
     ++ind;
 		this->t_now=toc();

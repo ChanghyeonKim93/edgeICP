@@ -8,7 +8,9 @@
 #include <cmath>
 #include <string>
 #include <sstream>
-
+#include <cstdio>
+#include <cstdlib>
+#include <ctype.h>
 // standard STL
 #include <list>
 #include <vector>
