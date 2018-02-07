@@ -82,6 +82,7 @@ private:
 
   // pixel containers
   std::vector<Point_2d> cur_edge_px, key_edge_px; // for release the vector, vector.resize(0);
+  std::vector<Point_4d> cur_edge_px_4d, key_edge_px_4d;
   std::vector<double> cur_pt_u,cur_pt_v, key_pt_u,key_pt_v;
   std::vector<double> cur_grad_u,cur_grad_v, key_grad_u,key_grad_v;
   std::vector<int> ref_ind;

@@ -96,4 +96,9 @@ class KDTree{
     private:
         bool lies_in_range( const Point& p, const Point& pMin, const Point& pMax );
     /// @}
+
+    //Changhyeon function
+    public:
+      void kdtree_nearest_neighbor(const std::vector<std::vector<double>>& query_data, std::vector<int>& ref_ind);
+
 };

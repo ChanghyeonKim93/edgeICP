@@ -324,6 +324,25 @@ int KDTree::closest_point(const Point &p){
     return idx;
 }
 
+void KDTree::kdtree_nearest_neighbor(const std::vector<std::vector<double>>& query_data, std::vector<int>& ref_ind){ // changhyeon kim update
+  int npoints = query_data.size();
+  int ndims = query_data[0].size();
+  std::vector<double> query (ndims,0);
+  //std::cout<<"npoints : " <<npoints <<", ndims : "<<ndims<<std::endl; // for debug
+  int idx;
+  double dist;
+
+  std::vector<int> null_vec;
+  ref_ind.swap(null_vec);
+
+  for(int i=0;i<npoints;i++){
+    for(int j=0; j<ndims; j++) query[j] = query_data[i][j];
+    closest_point(query,idx,dist);//find closest point.
+    if(dist==30.0) ref_ind.push_back(-1);
+    else ref_ind.push_back(idx);
+  }
+}
+
 /** @see knn_search
  * this function was in the original paper implementation.
  * Was this function useful? How to implement the "done"

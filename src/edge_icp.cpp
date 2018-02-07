@@ -30,7 +30,6 @@ void VOEdgeICP::setKeyImages(){
   cur_depth.release();
 	null_vec1.swap(cur_img_vec);
 	null_vec2.swap(cur_depth_vec);
-
 };
 
 // run function
@@ -42,10 +41,11 @@ void VOEdgeICP::run(){
   int ind = init_num-1;
 
 	int N_sample = 500;
-	int max_num_of_icp_iter = 30;
+	int max_num_of_icp_iter = 50;
 	int dist_thres = 15; // pixels
 	double trans_thres = 0.02; // 2cm
 	double rot_thres = 3; // 3 degree
+	int iter_shift_search = 7; //after 7 iterations, shift to the 2d NN searching.heuristic.
 
 	std::vector<Point_2d> temp2d_vec,null_vec;
 	std::vector<Point_4d> temp4d_vec;
@@ -121,40 +121,50 @@ void VOEdgeICP::run(){
 
 		// 3. iteration part
 		int icp_iter = 1;
-		Point_2d temp2d;
-		temp2d.push_back(this->cur_pt_u[0]/320.0);
-		temp2d.push_back(this->cur_pt_v[0]/320.0);
+		Point_2d temp2d(2,0);
+		Point_4d temp4d(4,0);
+
+		// current point container initialization.
+		//int npoints = this->cur_pt_u.size();
+		int npoints = 500;
+		this->cur_edge_px.resize(npoints,temp2d);
+		this->cur_edge_px_4d.resize(npoints,temp4d);
+		this->ref_ind.resize(npoints,-1);
+		for(int i=0;i<npoints;i++){
+			this->cur_edge_px[i][0]=this->cur_pt_u[i]/320.0;
+			this->cur_edge_px[i][1]=this->cur_pt_v[i]/320.0;
+			this->cur_edge_px_4d[i][0]=this->cur_pt_u[i]/320.0;
+			this->cur_edge_px_4d[i][1]=this->cur_pt_v[i]/320.0;
+			this->cur_edge_px_4d[i][2]=this->cur_grad_u[i];
+			this->cur_edge_px_4d[i][3]=this->cur_grad_v[i];
+		}
+
+
 		while(icp_iter <=max_num_of_icp_iter){
 			// warp_pts
 
-			if(icp_iter<=6){
-				// 4d finding
-				// find nearest pixels.
-				for(int k=0; k<N_sample; k++){
-
-					//std::cout<<"1 : "<<*(&temp2d)<<", 2 : "<<*(&temp2d+1)<<std::endl;
-					int idx_close = key_tree_2->closest_point(temp2d);
-					this->ref_ind.push_back(idx_close);
-					//std::cout<<"closest : "<<idx_close1<<std::endl;
-				}
-				std::vector<int> null_int_vec;
-				this->ref_ind.swap(null_int_vec);
+			std::cout<<"iter : "<<icp_iter<<std::endl;
+			if(icp_iter<=iter_shift_search){
+				// 4d find nearest pixels.
+				key_tree_4->kdtree_nearest_neighbor(this->cur_edge_px_4d, this->ref_ind);
+				//for(int i=0;i<ref_ind.size();i++) std::cout<<"ref ind  : "<<ref_ind[i]<<std::endl;
+				//std::cout<<"ref ind size :"<<ref_ind.size()<<std::endl;
 			}
 			else{
-   	    // 2d finding
-				// find nearest pixels.
-				for(int k=0; k<N_sample; k++){
-
-					int idx_close = key_tree_2->closest_point(temp2d);
-					this->ref_ind.push_back(idx_close);
-					//std::cout<<"closest : "<<idx_close1<<std::endl;
-				}
-				std::vector<int> null_int_vec;
-				this->ref_ind.swap(null_int_vec);
+				key_tree_2->kdtree_nearest_neighbor(this->cur_edge_px, this->ref_ind);
+				//for(int i=0;i<ref_ind.size();i++) std::cout<<"ref ind  : "<<ref_ind[i]<<std::endl;
+				//std::cout<<"ref ind size :"<<ref_ind.size()<<std::endl;
 			}
+
+
+
+
+
 
 			icp_iter++;
 		}
+
+		// change the keyframes
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------//
