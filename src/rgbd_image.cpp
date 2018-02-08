@@ -264,12 +264,14 @@ void RGBDIMAGE::calcResidual(const std::vector<Point_4d>& key_edge_px_4d, const 
   residual.resize(N_sample,0.0);
   res_x.resize(N_sample,0.0);
   res_y.resize(N_sample,0.0);
-
-  for(int i=0;i<N_sample;i++){
+  for(int i=0; i<N_sample; i++){
     res_x[i] = cur_edge_px_4d_sub[i][0] - key_edge_px_4d[ref_ind[i]][0];
     res_y[i] = cur_edge_px_4d_sub[i][1] - key_edge_px_4d[ref_ind[i]][1];
     residual[i] = res_x[i]*key_edge_px_4d[ref_ind[i]][0] + res_y[i]*key_edge_px_4d[ref_ind[i]][1]; // divergence around the edge pixels.
+    std::cout<<i<<std::endl;
   }
+  std::cout<<"1"<<std::endl;
+
 }
 
 void RGBDIMAGE::randsample(const int& npoints, const int& N_sample, std::vector<int>& sub_idx){

@@ -118,11 +118,15 @@ void VOEdgeICP::run(){
 		cv::Canny(this->cur_img, edge_map,170,220);
 		RGBDIMAGE::findValidMask(edge_map, this->cur_depth, this->cur_valid_mask,this->cur_valid_num_px); // pixels used as edge pixels.
 		RGBDIMAGE::setEdgePoints(this->cur_valid_mask, dx, dy, this-> cur_valid_num_px, this->cur_pt_u, this->cur_pt_v, this->cur_grad_u, this->cur_grad_v); // made the pts sets.
+
 		std::cout<<" # of curr pts before sampling : " <<cur_pt_u.size()<<std::endl;
 
 		// sub-sampling - random sampling for N_sample.
+
 		std::vector<int> sample_ind;
+
 		int npoints = this->cur_pt_u.size();
+
 		RGBDIMAGE::randsample(npoints,N_sample,sample_ind);
 
 		// initialize the sub-sampled pixels
@@ -154,7 +158,8 @@ void VOEdgeICP::run(){
 
 			//for(int i=0;i<ref_ind.size();i++) std::cout<<ref_ind[i]<<std::endl;
 			// calc_residual
-			RGBDIMAGE::calcResidual(this->key_edge_px_4d,this->cur_edge_px_4d_sub, this->ref_ind, this->res_x, this->res_y, this->residual);
+
+			//RGBDIMAGE::calcResidual(this->key_edge_px_4d,this->cur_edge_px_4d_sub, this->ref_ind, this->res_x, this->res_y, this->residual);
 
 			// calc_jacobian
       //RGBDIMAGE::calcJacobian();

@@ -38,7 +38,7 @@ LIST(APPEND SOURCEFILES
   src/edge_icp.cpp
   src/rgbd_image.cpp
   src/debugging.cpp
-
+  src/KDTree.cpp
 )
 
 
