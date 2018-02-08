@@ -15,15 +15,16 @@
 #include <list>
 #include <vector>
 
+// c++ 11 for random
+#include <algorithm>
+#include <random>
+
 // file IO
 #include <fstream>
 
 // Eigen
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry> // for Lie algebra calculations.
-
-// Sophus
-
 
 // OpenCV
 #include <opencv2/core/core.hpp>

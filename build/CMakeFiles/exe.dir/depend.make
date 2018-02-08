@@ -140,6 +140,7 @@ CMakeFiles/exe.dir/src/debugging.cpp.o: /usr/local/include/opencv2/xfeatures2d/c
 CMakeFiles/exe.dir/src/debugging.cpp.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/KDTree.h
+CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/LieGroup.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/MyHeaps.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/common.h
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: ../include/debugging.h
@@ -278,6 +279,7 @@ CMakeFiles/exe.dir/src/edge_icp.cpp.o: /usr/local/include/opencv2/xfeatures2d/cu
 CMakeFiles/exe.dir/src/edge_icp.cpp.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/KDTree.h
+CMakeFiles/exe.dir/src/main.cpp.o: ../include/LieGroup.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/MyHeaps.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/common.h
 CMakeFiles/exe.dir/src/main.cpp.o: ../include/edge_icp.h
@@ -414,6 +416,7 @@ CMakeFiles/exe.dir/src/main.cpp.o: /usr/local/include/opencv2/xfeatures2d.hpp
 CMakeFiles/exe.dir/src/main.cpp.o: /usr/local/include/opencv2/xfeatures2d/cuda.hpp
 CMakeFiles/exe.dir/src/main.cpp.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 
+CMakeFiles/exe.dir/src/rgbd_image.cpp.o: ../include/LieGroup.h
 CMakeFiles/exe.dir/src/rgbd_image.cpp.o: ../include/common.h
 CMakeFiles/exe.dir/src/rgbd_image.cpp.o: ../include/rgbd_image.h
 CMakeFiles/exe.dir/src/rgbd_image.cpp.o: ../src/rgbd_image.cpp

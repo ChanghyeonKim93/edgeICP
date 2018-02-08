@@ -251,6 +251,79 @@ void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& gra
   }
 }
 
+/*void RGBDIMAGE::warpPoints(const std::vector<Point_2d>& cur_edge_px_sub, const Eigen::MatrixXd& xi_temp){
+  Eigen::Matrix4d g_temp;
+  LIE::se3Exp(xi_temp,g_temp);
+
+}
+*/
+
+void RGBDIMAGE::calcResidual(const std::vector<Point_4d>& key_edge_px_4d, const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<int>& ref_ind, std::vector<double>& res_x, std::vector<double>& res_y, std::vector<double>& residual){
+  int N_sample = cur_edge_px_4d_sub.size();
+  // resize
+  residual.resize(N_sample,0.0);
+  res_x.resize(N_sample,0.0);
+  res_y.resize(N_sample,0.0);
+
+  for(int i=0;i<N_sample;i++){
+    res_x[i] = cur_edge_px_4d_sub[i][0] - key_edge_px_4d[ref_ind[i]][0];
+    res_y[i] = cur_edge_px_4d_sub[i][1] - key_edge_px_4d[ref_ind[i]][1];
+    residual[i] = res_x[i]*key_edge_px_4d[ref_ind[i]][0] + res_y[i]*key_edge_px_4d[ref_ind[i]][1]; // divergence around the edge pixels.
+  }
+}
+
+void RGBDIMAGE::randsample(const int& npoints, const int& N_sample, std::vector<int>& sub_idx){
+  std::vector<int> idx_vec(npoints,0);
+  for(int i=0;i<npoints;i++) idx_vec[i]=i;
+
+  std::random_shuffle(idx_vec.begin(),idx_vec.end());
+  std::vector<int> null_vec;
+  sub_idx.swap(null_vec);
+  sub_idx.resize(N_sample);
+  //sampling specific number of ...
+  for(int i=0;i<N_sample;i++){
+    sub_idx[i] = idx_vec[i];
+    //std::cout<<idx_vec[i]<<", "; // for debug
+  }
+  //std::cout<<"input num : "<<npoints<<", debug - sub num : "<<sub_idx.size()<<std::endl;
+}
+
+void RGBDIMAGE::update_t_distribution(const std::vector<double>& residual, double& sigma){
+  int nu = 5;
+  int N = residual.size();
+  double lambda_prev = 1.0/sigma/sigma;
+  double temp=0.0, lambda_curr=0.0, sum=0.0;
+  double eps = 0.0000001;
+  while(1){
+    for(int i=0;i<N;i++) sum+= residual[i]*residual[i] / ( (double)nu + lambda_prev*residual[i]*residual[i]);
+    temp = ( (nu+1.0)/(double)N )*sum;
+
+    if(fabs(lambda_curr-lambda_prev)<=eps) break;
+    lambda_prev = lambda_curr;
+  }
+  sigma = sqrt(1.0/lambda_prev);
+}
+
+void RGBDIMAGE::calcJacobian(const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<Point_4d>& key_edge_px_4d, const std::vector<int> ref_ind, const std::vector<double>& residual, Eigen::MatrixXd& J){
+  int N_sample = cur_edge_px_4d_sub.size();
+  J = Eigen::MatrixXd::Zero(N_sample,6); // need to initialize ?
+  double X=0,Y=0,Z=0; // need to be modified
+  double fx=0,fy=0;
+  for(int i=0;i<N_sample;i++){
+    double g_x = key_edge_px_4d[ref_ind[i]][2], g_y = key_edge_px_4d[ref_ind[i]][3];
+    J(i,0)= fx/Z*g_x;
+    J(i,1)= fy/Z*g_y;
+    J(i,2)= -fx*X/Z/Z*g_x - fy*Y/Z/Z*g_y;
+    J(i,3)= -fx*X*Y/Z/Z*g_x - fy*(1+Y*Y/Z/Z)*g_y;
+    J(i,4)= fx*(1+X*X/Z/Z)*g_x + fy*X*Y/Z/Z*g_y;
+    J(i,5)= -fx*Y/Z*g_x + fy*X/Z*g_y;
+  }
+
+}
+
+
+
+
 // not use
 
 void RGBDIMAGE::dummyFunc(){
@@ -265,11 +338,9 @@ void RGBDIMAGE::dummyFunc(){
   for(int k=0;k<30;k++){
     //Hx = Jx.transpose()*Jx;
     //Hy = Jy.transpose()*Jy;
-    //res = Hx.inverse()*Jx.transpose()*rx+Hy.inverse()*Jy.transpose()*ry;
     res=(Jx.transpose()*Jx).inverse()*Jx.transpose()*rx +(Jx.transpose()*Jx).inverse()*Jx.transpose()*rx ;
+    //res = Hx.inverse()*Jx.transpose()*rx+Hy.inverse()*Jy.transpose()*ry;
   }
-
-
 }
 
 
