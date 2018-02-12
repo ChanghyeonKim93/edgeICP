@@ -18,8 +18,8 @@ public:
     Eigen::Matrix3d K,invK;
     double fx,fy,cx,cy;
     Calibration(){
-      width = 320;
-      height = 240;
+      width = 640;
+      height = 4800;
       K << 535.433105,0.0,320.106653,
       0.0, 539.212524, 247.632131,
       0.0, 0.0, 1.0;
@@ -66,6 +66,10 @@ public:
 
 
 private:
+  // motion
+  Eigen::MatrixXd xi_temp;
+  Eigen::MatrixXd delta_xi;
+
   // image data sync
   std::vector<std::string> rgb_name_vec, depth_name_vec;
 	std::vector<double> t_cam_vec;
@@ -79,20 +83,21 @@ private:
 
   // time related
   unsigned long t_now;
-  std::vector<double> t_save;
+  std::vector<double>   t_save;
 
   // pixel containers
-  std::vector<Point_2d> cur_edge_px, key_edge_px; // for release the vector, vector.resize(0);
-  std::vector<Point_4d> cur_edge_px_4d, key_edge_px_4d, warp_edge_px_4d;
+  std::vector<Point_2d> cur_edge_px,        key_edge_px; // for release the vector, vector.resize(0);
+  std::vector<Point_4d> cur_edge_px_4d,     key_edge_px_4d,        warped_edge_px_4d;
 
-  std::vector<Point_2d> cur_edge_px_sub, warp_edge_px_sub;
-  std::vector<Point_4d> cur_edge_px_4d_sub, warp_edge_px_4d_sub;
+  std::vector<Point_2d> cur_edge_px_sub,    warped_edge_px_sub;
+  std::vector<Point_4d> cur_edge_px_4d_sub, warped_edge_px_4d_sub;
 
-  std::vector<double> cur_pt_u,cur_pt_v, key_pt_u,key_pt_v;
-  std::vector<double> warp_pt_u,warp_pt_v;
-  std::vector<double> cur_grad_u,cur_grad_v, key_grad_u,key_grad_v;
-  std::vector<int> ref_ind;
-  std::vector<double> residual,res_x,res_y;
+  std::vector<double>   cur_pt_u,           cur_pt_v,              key_pt_u,          key_pt_v;
+  std::vector<double>   cur_pt_depth,       key_pt_depth,          warped_pt_depth;
+  std::vector<double>   warp_pt_u,          warp_pt_v;
+  std::vector<double>   cur_grad_u,         cur_grad_v,            key_grad_u,        key_grad_v;
+  std::vector<int>      ref_ind;
+  std::vector<double>   residual,           res_x,                 res_y;
 
   // KDTree
   KDTree* key_tree_2;

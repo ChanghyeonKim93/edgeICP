@@ -19,11 +19,16 @@ namespace RGBDIMAGE{
   void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&);
   void calcDerivNorm(cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&);
   void findValidMask(cv::Mat&, cv::Mat&, cv::Mat&, int&);
-  void setEdgePoints(cv::Mat&,cv::Mat&,cv::Mat&, int&, std::vector<double>&, std::vector<double>&,std::vector<double>&, std::vector<double>&);
+  void setEdgePoints(cv::Mat&, cv::Mat&, cv::Mat&, cv::Mat&, std::vector<double>&, std::vector<double>&, std::vector<double>&, std::vector<double>&, std::vector<double>&);
   void calcResidual(const std::vector<Point_4d>& key_edge_px_4d, const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<int>& ref_ind, std::vector<double>& res_x, std::vector<double>& res_y, std::vector<double>& residual);
   void update_t_distribution(const std::vector<double>& residual, double& sigma);
   void randsample(const int& npoints, const int& N_sample, std::vector<int>& sub_idx);
-  void calcJacobian(const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<Point_4d>& key_edge_px_4d, const std::vector<int> ref_ind, const std::vector<double>& residual, Eigen::MatrixXd& J);
+  void calcJacobian(const std::vector<Point_2d>& warped_edge_px_sub, const std::vector<double>& warped_pt_depth, const std::vector<Point_4d>& key_edge_px_4d, const std::vector<int> ref_ind, const std::vector<double>& residual, const Eigen::Matrix3d& K, Eigen::MatrixXd& J);
+  void proj_pixel(const Point_3d& input_arr, const Eigen::Matrix3d& K, Point_3d& output_arr);
+  void proj_3d   (const Point_3d& input_arr, const Eigen::Matrix3d& K, Point_3d& output_arr);
+  void warpPoints(const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<double>& cur_pt_depth, const Eigen::Matrix3d& K, const Eigen::MatrixXd& xi_temp, std::vector<Point_2d>& warped_edge_px_sub, std::vector<Point_4d>& warped_edge_px_4d_sub , std::vector<double>& warped_pt_depth);
+  void se3Exp(const Eigen::MatrixXd& xi_temp, Eigen::Matrix4d& g);
+  void hatOperator(const Eigen::Vector3d& col_vec, Eigen::Matrix3d& skew_mat);
 
   // not use
   void dummyFunc();

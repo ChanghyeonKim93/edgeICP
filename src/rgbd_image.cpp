@@ -170,11 +170,11 @@ void RGBDIMAGE::calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o) {
   cv::Mat temp;
   temp.create(dx.size(),CV_64F);
   for(int v = 0; v< dx.rows;v++){
-    double* dx_ptr = dx.ptr<double>(v);
-    double* dy_ptr = dy.ptr<double>(v);
+    short* dx_ptr = dx.ptr<short>(v);
+    short* dy_ptr = dy.ptr<short>(v);
     double* temp_ptr = temp.ptr<double>(v);
     for(int u=0;u<dx.cols;u++){
-      *(temp_ptr+u) = sqrt((*(dx_ptr+u))*(*(dx_ptr+u)) + (*(dy_ptr+u))*(*(dy_ptr+u)) );
+      *(temp_ptr+u) = sqrt( (double)((*(dx_ptr+u))*(*(dx_ptr+u)) + (*(dy_ptr+u))*(*(dy_ptr+u))) );
     }
   }
   temp.copyTo(img_o);
@@ -187,15 +187,15 @@ void RGBDIMAGE::calcDerivNorm(cv::Mat& dx, cv::Mat& dy, cv::Mat& img_o, cv::Mat&
   temp_y.create(dx.size(),CV_64F);
 
   for(int v = 0; v< dx.rows;v++){
-    double* dx_ptr = dx.ptr<double>(v);
-    double* dy_ptr = dy.ptr<double>(v);
+    short* dx_ptr = dx.ptr<short>(v);
+    short* dy_ptr = dy.ptr<short>(v);
     double* temp_x_ptr = temp_x.ptr<double>(v);
     double* temp_y_ptr = temp_y.ptr<double>(v);
     double* temp_ptr = temp.ptr<double>(v);
     for(int u=0;u<dx.cols;u++){
-      *(temp_ptr+u) = sqrt((*(dx_ptr+u))*(*(dx_ptr+u)) + (*(dy_ptr+u))*(*(dy_ptr+u)) );
-      *(temp_x_ptr+u) = (*(dx_ptr+u)) / (*(temp_ptr+u));
-      *(temp_y_ptr+u) = (*(dy_ptr+u)) / (*(temp_ptr+u));
+      *(temp_ptr+u) = sqrt( (double)((*(dx_ptr+u))*(*(dx_ptr+u)) + (double)(*(dy_ptr+u))*(*(dy_ptr+u))) );
+      *(temp_x_ptr+u) = (double)(*(dx_ptr+u)) / (*(temp_ptr+u));
+      *(temp_y_ptr+u) = (double)(*(dy_ptr+u)) / (*(temp_ptr+u));
     }
   }
   temp.copyTo(img_o);
@@ -225,16 +225,18 @@ void RGBDIMAGE::findValidMask(cv::Mat& edge_map, cv::Mat& depth_map, cv::Mat& im
   temp.copyTo(img_o); // output : valid pixel mask cv::Mat image
 }
 
-void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& grad_y, int& valid_num, std::vector<double>& arr_u, std::vector<double>& arr_v, std::vector<double>& arr_grad_u, std::vector<double>&arr_grad_v){//input : valid mask(Mat), ptr (Eigen::data()) row major
+void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& grad_y, cv::Mat& img_depth, std::vector<double>& arr_u, std::vector<double>& arr_v, std::vector<double>& arr_depth, std::vector<double>& arr_grad_u, std::vector<double>&arr_grad_v){//input : valid mask(Mat), ptr (Eigen::data()) row major
   arr_u.resize(0); // initialize
   arr_v.resize(0);
   arr_grad_u.resize(0);
   arr_grad_v.resize(0);
+  arr_depth.resize(0);
   int ind = 0;
   for(int v = 0;v<valid_mask.rows;v++){
     uchar* valid_mask_ptr = valid_mask.ptr<uchar>(v);
     double* grad_x_ptr = grad_x.ptr<double>(v);
     double* grad_y_ptr = grad_y.ptr<double>(v);
+    double* depth_ptr = img_depth.ptr<double>(v);
 
     for(int u = 0; u<valid_mask.cols;u++){
     //  std::cout<<(int)*(valid_mask_ptr++)<<std::endl;
@@ -244,6 +246,7 @@ void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& gra
         arr_v.push_back(v);
         arr_grad_u.push_back(*(grad_x_ptr+u));
         arr_grad_v.push_back(*(grad_y_ptr+u));
+        arr_depth.push_back(*(depth_ptr+u));
         //arr_grad_v(ind)=*(grad_y_ptr+u);
         ind++;
       }
@@ -261,17 +264,14 @@ void RGBDIMAGE::setEdgePoints(cv::Mat& valid_mask, cv::Mat& grad_x, cv::Mat& gra
 void RGBDIMAGE::calcResidual(const std::vector<Point_4d>& key_edge_px_4d, const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<int>& ref_ind, std::vector<double>& res_x, std::vector<double>& res_y, std::vector<double>& residual){
   int N_sample = cur_edge_px_4d_sub.size();
   // resize
-  residual.resize(N_sample,0.0);
-  res_x.resize(N_sample,0.0);
-  res_y.resize(N_sample,0.0);
+  residual.resize(N_sample);
+  res_x.resize(N_sample);
+  res_y.resize(N_sample);
   for(int i=0; i<N_sample; i++){
     res_x[i] = cur_edge_px_4d_sub[i][0] - key_edge_px_4d[ref_ind[i]][0];
     res_y[i] = cur_edge_px_4d_sub[i][1] - key_edge_px_4d[ref_ind[i]][1];
     residual[i] = res_x[i]*key_edge_px_4d[ref_ind[i]][0] + res_y[i]*key_edge_px_4d[ref_ind[i]][1]; // divergence around the edge pixels.
-    std::cout<<i<<std::endl;
   }
-  std::cout<<"1"<<std::endl;
-
 }
 
 void RGBDIMAGE::randsample(const int& npoints, const int& N_sample, std::vector<int>& sub_idx){
@@ -306,24 +306,185 @@ void RGBDIMAGE::update_t_distribution(const std::vector<double>& residual, doubl
   sigma = sqrt(1.0/lambda_prev);
 }
 
-void RGBDIMAGE::calcJacobian(const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<Point_4d>& key_edge_px_4d, const std::vector<int> ref_ind, const std::vector<double>& residual, Eigen::MatrixXd& J){
-  int N_sample = cur_edge_px_4d_sub.size();
-  J = Eigen::MatrixXd::Zero(N_sample,6); // need to initialize ?
-  double X=0,Y=0,Z=0; // need to be modified
-  double fx=0,fy=0;
-  for(int i=0;i<N_sample;i++){
-    double g_x = key_edge_px_4d[ref_ind[i]][2], g_y = key_edge_px_4d[ref_ind[i]][3];
-    J(i,0)= fx/Z*g_x;
-    J(i,1)= fy/Z*g_y;
-    J(i,2)= -fx*X/Z/Z*g_x - fy*Y/Z/Z*g_y;
-    J(i,3)= -fx*X*Y/Z/Z*g_x - fy*(1+Y*Y/Z/Z)*g_y;
-    J(i,4)= fx*(1+X*X/Z/Z)*g_x + fy*X*Y/Z/Z*g_y;
-    J(i,5)= -fx*Y/Z*g_x + fy*X/Z*g_y;
+void RGBDIMAGE::calcJacobian(const std::vector<Point_2d>& warped_edge_px_sub, const std::vector<double>& warped_pt_depth, const std::vector<Point_4d>& key_edge_px_4d, const std::vector<int> ref_ind, const std::vector<double>& residual, const Eigen::Matrix3d& K, Eigen::MatrixXd& J){
+  int n_points = warped_edge_px_sub.size();
+  J = Eigen::MatrixXd::Zero(n_points,6); // need to initialize ?
+
+  double fx=K(0,0),fy=K(1,1);
+  double cx=K(0,2),cy=K(1,2);
+  double g_x,g_y,X,Y,Z;
+  double Zinv, XZinv, YZinv, fxgx, fygy;
+  Point_3d temp3d(3,0);
+  Point_3d temp3d_res(3,0);
+  for(int i=0; i<n_points; i++){
+    temp3d[0]=warped_edge_px_sub[i][0];
+    temp3d[1]=warped_edge_px_sub[i][1];
+    temp3d[2]=warped_pt_depth[i];
+    proj_3d(temp3d,K,temp3d_res);
+    X=temp3d_res[0];
+    Y=temp3d_res[1];
+    Z=temp3d_res[2]; // warped current pixels.
+    g_x = key_edge_px_4d[ref_ind[i]][2];
+    g_y = key_edge_px_4d[ref_ind[i]][3];
+    Zinv = 1/Z;
+    XZinv = X/Z;
+    YZinv = Y/Z;
+    fxgx = fx*g_x;
+    fygy = fy*g_y;
+
+    J(i,0)= Zinv*fxgx;
+    J(i,1)= Zinv*fygy;
+    J(i,2)= -XZinv*Zinv*fxgx - YZinv*Zinv*fygy;
+    J(i,3)= -XZinv*YZinv*fxgx - (1+YZinv*YZinv)*fygy;
+    J(i,4)= (1+XZinv*XZinv)*fxgx + XZinv*YZinv*fygy;
+    J(i,5)= -YZinv*fxgx + XZinv*fygy;
+  }
+}
+
+void RGBDIMAGE::proj_pixel(const Point_3d& input_arr, const Eigen::Matrix3d& K, Point_3d& output_arr){
+  double fx = K(0,0), fy = K(1,1);
+  double cx = K(0,2), cy = K(1,2);
+  output_arr.resize(3,0);
+  double u,v;
+  double Zinv = 1/input_arr[2];
+  u = fx*input_arr[0]*Zinv + cx;
+  v = fy*input_arr[1]*Zinv + cy;
+  output_arr[0]=u;
+  output_arr[1]=v;
+  output_arr[2]=1;
+}
+
+void RGBDIMAGE::proj_3d(const Point_3d& input_arr, const Eigen::Matrix3d& K, Point_3d& output_arr){
+  double fx = K(0,0), fy = K(1,1);
+  double cx = K(0,2), cy = K(1,2);
+  double fxinv = 1/fx, fyinv = 1/fy;
+  double X,Y,Z;
+  output_arr.resize(3,0);
+  Z = input_arr[2];
+  X = (input_arr[0]-cx)*fxinv*Z;
+  Y = (input_arr[1]-cy)*fyinv*Z;
+  output_arr[0]=X;
+  output_arr[1]=Y;
+  output_arr[2]=Z;
+}
+
+void RGBDIMAGE::warpPoints(const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<double>& cur_pt_depth, const Eigen::Matrix3d& K, const Eigen::MatrixXd& xi_temp, std::vector<Point_2d>& warped_edge_px_sub, std::vector<Point_4d>& warped_edge_px_4d_sub, std::vector<double>& warped_pt_depth){
+  Eigen::Matrix4d g_mat;
+  int n_points = cur_edge_px_4d_sub.size();
+  se3Exp(xi_temp, g_mat);
+  Eigen::MatrixXd curr_points_affine(4,n_points);
+  Eigen::MatrixXd warped_points_affine(4,n_points);
+
+  for(int i=0;i<n_points;i++){
+    Point_3d temp3d;
+    Point_3d temp3d_res;
+
+    temp3d.push_back(cur_edge_px_4d_sub[i][0]);
+    temp3d.push_back(cur_edge_px_4d_sub[i][1]);
+    temp3d.push_back(cur_pt_depth[i]);
+
+    proj_3d(temp3d,K,temp3d_res);
+    curr_points_affine(0,i) = temp3d_res[0];
+    curr_points_affine(1,i) = temp3d_res[1];
+    curr_points_affine(2,i) = temp3d_res[2];
+    curr_points_affine(3,i) = 1.0;
   }
 
+  // warping.
+  warped_points_affine=g_mat*curr_points_affine;
+
+  // reprojecting
+  Point_2d temp2d(2,0);
+  Point_4d temp4d(4,0);
+  warped_edge_px_sub.resize(n_points,temp2d); // initialize
+  warped_edge_px_4d_sub.resize(n_points,temp4d); // initialize
+  warped_pt_depth.resize(n_points,0);
+  for(int i=0;i<n_points;i++){
+    Point_3d temp3d(3,0);
+    Point_3d temp3d_res;
+    temp3d[0] = warped_points_affine(0,i);
+    temp3d[1] = warped_points_affine(1,i);
+    temp3d[2] = warped_points_affine(2,i);
+    warped_pt_depth[i]=  temp3d[2];
+    proj_pixel(temp3d,K,temp3d_res);
+
+    warped_edge_px_sub[i][0]    = temp3d_res[0];
+    warped_edge_px_sub[i][1]    = temp3d_res[1];
+
+    warped_edge_px_4d_sub[i][0] = temp3d_res[0];
+    warped_edge_px_4d_sub[i][1] = temp3d_res[1];
+    warped_edge_px_4d_sub[i][2] = cur_edge_px_4d_sub[i][2];
+    warped_edge_px_4d_sub[i][3] = cur_edge_px_4d_sub[i][3];
+  }
 }
 
 
+void RGBDIMAGE::se3Exp(const Eigen::MatrixXd& xi_temp, Eigen::Matrix4d& g){
+  // initialize variables
+  Eigen::Vector3d v, w;
+  float length_w = 0.0;
+  Eigen::Matrix3d Wx, R, V;
+  Eigen::Vector3d t;
+
+  v(0) = xi_temp(0);
+  v(1) = xi_temp(1);
+  v(2) = xi_temp(2);
+  w(0) = xi_temp(3);
+  w(1) = xi_temp(4);
+  w(2) = xi_temp(5);
+
+  length_w = std::sqrt(w.transpose() * w);
+  hatOperator(w, Wx);
+  if (length_w < 1e-7)
+  {
+      R = Eigen::Matrix3d::Identity(3,3) + Wx + 0.5 * Wx * Wx;
+      V = Eigen::Matrix3d::Identity(3,3) + 0.5 * Wx + Wx * Wx / 3.0;
+  }
+  else
+  {
+
+      R = Eigen::Matrix3d::Identity(3,3) + (sin(length_w)/length_w) * Wx + ((1-cos(length_w))/(length_w*length_w)) * (Wx*Wx);
+      V = Eigen::Matrix3d::Identity(3,3) + ((1-cos(length_w))/(length_w*length_w)) * Wx + ((length_w-sin(length_w))/(length_w*length_w*length_w)) * (Wx*Wx);
+  }
+  t = V * v;
+
+  // assign rigid body transformation matrix (in SE(3))
+  g = Eigen::MatrixXd::Identity(4,4);
+  g(0,0) = R(0,0);
+  g(0,1) = R(0,1);
+  g(0,2) = R(0,2);
+
+  g(1,0) = R(1,0);
+  g(1,1) = R(1,1);
+  g(1,2) = R(1,2);
+
+  g(2,0) = R(2,0);
+  g(2,1) = R(2,1);
+  g(2,2) = R(2,2);
+
+  g(0,3) = t(0);
+  g(1,3) = t(1);
+  g(2,3) = t(2);
+
+      // for debug
+      // std::cout << R << std::endl;
+      // std::cout << t << std::endl;
+      //usleep(10000000);
+}
+
+void RGBDIMAGE::hatOperator(const Eigen::Vector3d& col_vec, Eigen::Matrix3d& skew_mat){
+   skew_mat(0,0) = 0;
+   skew_mat(0,1) = -col_vec(2);
+   skew_mat(0,2) = col_vec(1);
+
+   skew_mat(1,0) = col_vec(2);
+   skew_mat(1,1) = 0;
+   skew_mat(1,2) = -col_vec(0);
+
+   skew_mat(2,0) = -col_vec(1);
+   skew_mat(2,1) = col_vec(0);
+   skew_mat(2,2) = 0;
+}
 
 
 // not use

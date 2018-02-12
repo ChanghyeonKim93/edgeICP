@@ -41,7 +41,7 @@ void VOEdgeICP::run(){
   int ind = init_num-1;
 
 	int N_sample = 500;
-	int max_num_of_icp_iter = 30;
+	int max_num_of_icp_iter = 40;
 	double dist_thres = 15.0; // pixels
 	double trans_thres = 0.02; // 2cm
 	double rot_thres = 3; // 3 degree
@@ -66,58 +66,83 @@ void VOEdgeICP::run(){
 	// Algorithm part
 	ind = init_num-1;
   while(ind<final_num){
-		cv::Mat edge_map, dx, dy, d_norm;
+		cv::Mat edge_map, dx_short, dx, dy_short, dy, d_norm;
 
 		toc(); // timing start
 
 		// Keyframe initialize
-		if(ind==init_num-1){			// for first keyframe initialization.
+		if(ind == init_num-1){			// for first keyframe initialization.
 			std::cout<<"keyframe initialize"<<std::endl;
-			RGBDIMAGE::downSampleImage(this->cur_img_vec[ind],   this->key_img);
-			RGBDIMAGE::downSampleDepth(this->cur_depth_vec[ind], this->key_depth); // downsample depth
-			RGBDIMAGE::calcDerivX(this->key_img, dx); // gradient map
-			RGBDIMAGE::calcDerivY(this->key_img, dy);
-			RGBDIMAGE::calcDerivNorm(dx,dy,d_norm,dx,dy);
+			this->xi_temp  = Eigen::MatrixXd::Zero(6,1);
+			this->delta_xi = Eigen::MatrixXd::Zero(6,1);
+
+			//RGBDIMAGE::downSampleImage(this->cur_img_vec[ind],   this->key_img);
+			//RGBDIMAGE::downSampleDepth(this->cur_depth_vec[ind], this->key_depth); // downsample depth
+			this->key_img   = this->cur_img_vec[ind].clone();
+			this->key_depth = this->cur_depth_vec[ind].clone();
+			cv::Sobel(this->key_img, dx_short, CV_16S, 1,0,3,1,0,cv::BORDER_DEFAULT); // CV_16S : short -32768~32768, CV_64F : double
+			cv::Sobel(this->key_img, dy_short, CV_16S, 0,1,3,1,0,cv::BORDER_DEFAULT);
+			cv::GaussianBlur(dx_short,dx_short,cv::Size(3,3),0,0);
+			cv::GaussianBlur(dy_short,dy_short,cv::Size(3,3),0,0);
+			RGBDIMAGE::calcDerivNorm(dx_short, dy_short, d_norm, dx, dy);
 
 			cv::Canny(this->key_img,edge_map,170,220);
-			RGBDIMAGE::findValidMask(edge_map, this->key_depth, this->key_valid_mask,this->key_valid_num_px); // pixels used as edge pixels.
-			RGBDIMAGE::setEdgePoints(this->key_valid_mask, dx, dy, this-> key_valid_num_px, this->key_pt_u, this->key_pt_v, this->key_grad_u, this->key_grad_v); // made the pts sets.
-      // Insert points 2d
+			RGBDIMAGE::findValidMask(edge_map, this->key_depth, this->key_valid_mask, this->key_valid_num_px); // pixels used as edge pixels.
+			RGBDIMAGE::setEdgePoints(this->key_valid_mask, dx, dy, this->key_depth, this->key_pt_u, this->key_pt_v, this->key_pt_depth, this->key_grad_u, this->key_grad_v); // made the pts sets.
+
+			// Insert points 2d
 			for(int k=0; k<this->key_pt_u.size(); k++){
 				Point_2d temp2d;
-				temp2d.push_back(this->key_pt_u[k]/320.0);
-				temp2d.push_back(this->key_pt_v[k]/320.0);
+				temp2d.push_back(this->key_pt_u[k]/params.calib.width);
+				temp2d.push_back(this->key_pt_v[k]/params.calib.width);
 				temp2d_vec.push_back(temp2d);
 			}
-			key_tree_2 = new KDTree( temp2d_vec, dist_thres*dist_thres/320.0/320.0);
+
+			key_tree_2 = new KDTree( temp2d_vec, (dist_thres*dist_thres)/(params.calib.width*params.calib.width));
 			temp2d_vec.swap(null_vec);
       // Insert points 4d
+			Point_4d temp4d(4,0);
+			this->key_edge_px_4d.resize(this->key_pt_u.size(),temp4d);
 			for(int k=0; k<this->key_pt_u.size(); k++){
 				Point_4d temp4d;
-				temp4d.push_back(this->key_pt_u[k]/320.0);
-				temp4d.push_back(this->key_pt_v[k]/320.0);
+				temp4d.push_back(this->key_pt_u[k]/params.calib.width);
+				temp4d.push_back(this->key_pt_v[k]/params.calib.width);
 				temp4d.push_back(this->key_grad_u[k]);
 				temp4d.push_back(this->key_grad_v[k]);
 				temp4d_vec.push_back(temp4d);
+				this->key_edge_px_4d[k][0]=temp4d[0];
+				this->key_edge_px_4d[k][1]=temp4d[1];
+				this->key_edge_px_4d[k][2]=temp4d[2];
+				this->key_edge_px_4d[k][3]=temp4d[3];
 			}
-		  key_tree_4 = new KDTree( temp4d_vec, dist_thres*dist_thres/320.0/320.0 );
+		  key_tree_4 = new KDTree( temp4d_vec, (dist_thres*dist_thres)/(params.calib.width*params.calib.width) );
 			temp4d_vec.swap(null_vec);
+			xi_temp=Eigen::MatrixXd::Zero(6,1);
+			delta_xi=Eigen::MatrixXd::Zero(6,1);
+
 			ind++;
 		}
 
 		// get current image
-		RGBDIMAGE::downSampleImage(this->cur_img_vec[ind],   this->cur_img);
-		RGBDIMAGE::downSampleDepth(this->cur_depth_vec[ind], this->cur_depth); // downsample depth
-
+		//RGBDIMAGE::downSampleImage(this->cur_img_vec[ind],   this->cur_img);
+		//RGBDIMAGE::downSampleDepth(this->cur_depth_vec[ind], this->cur_depth); // downsample depth
+		this->cur_img   = this->cur_img_vec[ind].clone();
+		this->cur_depth = this->cur_depth_vec[ind].clone();
 		// gradient map calculations
-		RGBDIMAGE::calcDerivX(this->cur_img, dx); // gradient map
-		RGBDIMAGE::calcDerivY(this->cur_img, dy);
-		RGBDIMAGE::calcDerivNorm(dx, dy, d_norm, dx, dy);
+
+		cv::Sobel(this->cur_img, dx_short, CV_16S, 1,0,3,1,0,cv::BORDER_DEFAULT); // CV_16S : short -32768~32768, CV_64F : double
+		cv::Sobel(this->cur_img, dy_short, CV_16S, 0,1,3,1,0,cv::BORDER_DEFAULT);
+		cv::GaussianBlur(dx_short,dx_short,cv::Size(3,3),0,0);
+		cv::GaussianBlur(dy_short,dy_short,cv::Size(3,3),0,0);
+
+		RGBDIMAGE::calcDerivNorm(dx_short, dy_short, d_norm, dx, dy);
 
 		// find edge region ( full number w/o sampling )
+
 		cv::Canny(this->cur_img, edge_map,170,220);
+		std::cout<<t_now/1000.0<<std::endl;
 		RGBDIMAGE::findValidMask(edge_map, this->cur_depth, this->cur_valid_mask,this->cur_valid_num_px); // pixels used as edge pixels.
-		RGBDIMAGE::setEdgePoints(this->cur_valid_mask, dx, dy, this-> cur_valid_num_px, this->cur_pt_u, this->cur_pt_v, this->cur_grad_u, this->cur_grad_v); // made the pts sets.
+		RGBDIMAGE::setEdgePoints(this->cur_valid_mask, dx, dy, this->cur_depth, this->cur_pt_u, this->cur_pt_v, this->cur_pt_depth, this->cur_grad_u, this->cur_grad_v); // made the pts sets.
 
 		std::cout<<" # of curr pts before sampling : " <<cur_pt_u.size()<<std::endl;
 
@@ -127,7 +152,7 @@ void VOEdgeICP::run(){
 
 		int npoints = this->cur_pt_u.size();
 
-		RGBDIMAGE::randsample(npoints,N_sample,sample_ind);
+		RGBDIMAGE::randsample(npoints, N_sample, sample_ind);
 
 		// initialize the sub-sampled pixels
 		Point_2d temp2d(2,0);
@@ -138,11 +163,11 @@ void VOEdgeICP::run(){
 
 		for(int i=0; i<N_sample;i++){
 			int ind = sample_ind[i];
-			this->cur_edge_px_sub[i][0] = this->cur_pt_u[ind]/320.0;
-			this->cur_edge_px_sub[i][1] = this->cur_pt_v[ind]/320.0;
+			this->cur_edge_px_sub[i][0] = this->cur_pt_u[ind]/params.calib.width;
+			this->cur_edge_px_sub[i][1] = this->cur_pt_v[ind]/params.calib.width;
 
-			this->cur_edge_px_4d_sub[i][0] = this->cur_pt_u[ind]/320.0;
-			this->cur_edge_px_4d_sub[i][1] = this->cur_pt_v[ind]/320.0;
+			this->cur_edge_px_4d_sub[i][0] = this->cur_pt_u[ind]/params.calib.width;
+			this->cur_edge_px_4d_sub[i][1] = this->cur_pt_v[ind]/params.calib.width;
 			this->cur_edge_px_4d_sub[i][2] = this->cur_grad_u[ind];
 			this->cur_edge_px_4d_sub[i][3] = this->cur_grad_v[ind];
 		}
@@ -151,25 +176,26 @@ void VOEdgeICP::run(){
 		int icp_iter = 1;
 		while(icp_iter <=max_num_of_icp_iter) {
 			// warp_points
+			RGBDIMAGE::warpPoints(cur_edge_px_4d_sub, cur_pt_depth, params.calib.K, xi_temp, warped_edge_px_sub, warped_edge_px_4d_sub, warped_pt_depth);
 
 			// find robust edge match
-			if(icp_iter > iter_shift_search)  key_tree_2->kdtree_nearest_neighbor(this->cur_edge_px_sub,    this->ref_ind);
-			else 														  key_tree_4->kdtree_nearest_neighbor(this->cur_edge_px_4d_sub, this->ref_ind);
+			if (icp_iter > iter_shift_search)  key_tree_2->kdtree_nearest_neighbor(this->warped_edge_px_sub,    this->ref_ind);
+			else 														   key_tree_4->kdtree_nearest_neighbor(this->warped_edge_px_4d_sub, this->ref_ind);
 
-			//for(int i=0;i<ref_ind.size();i++) std::cout<<ref_ind[i]<<std::endl;
 			// calc_residual
-
-			//RGBDIMAGE::calcResidual(this->key_edge_px_4d,this->cur_edge_px_4d_sub, this->ref_ind, this->res_x, this->res_y, this->residual);
+			RGBDIMAGE::calcResidual(key_edge_px_4d,this->warped_edge_px_4d_sub, this->ref_ind, this->res_x,this->res_y, residual);
 
 			// calc_jacobian
-      //RGBDIMAGE::calcJacobian();
-
+			Eigen::MatrixXd J,Hessian;
+			RGBDIMAGE::calcJacobian(warped_edge_px_sub, this->warped_pt_depth, this->key_edge_px_4d, this->ref_ind, residual, params.calib.K,J);
+			Hessian = J.transpose()*J;
+			-(Hessian.inverse())*J.transpose();
 			// calc delta xi
 
 
 			// augment delta xi
-
-			// /std::cout<<"iter : "<<icp_iter<<std::endl;
+			// this->xi_temp += this->delta_xi;
+			// std::cout<<"iter : "<<icp_iter<<std::endl;
 
 			icp_iter++;
 		}
@@ -193,7 +219,7 @@ void VOEdgeICP::run(){
     ++ind;
 		this->t_now=toc();
 		this->t_save.push_back(this->t_now/1000.0);
-		std::cout<<" Elapsed time : "<<this->t_save.back() <<" [ms], # of image : "<<ind<<std::endl;
+		std::cout<<" Elapsed time : "<<this->t_save.back() <<" [ms], "<<1/this->t_save.back()*1000.0<< "[Hz], # of image : "<<ind<<std::endl;
 		// exit the program
     /*if((char)cv::waitKey(0)=='q'){
       std::cout<<std::endl<<std::endl;

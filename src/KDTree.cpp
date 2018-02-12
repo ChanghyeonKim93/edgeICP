@@ -339,9 +339,11 @@ void KDTree::kdtree_nearest_neighbor(const std::vector<std::vector<double>>& que
   for(int i=0;i<npoints;i++){
     for(int j=0; j<ndims; j++) query[j] = query_data[i][j];
     closest_point(query,idx,dist);//find closest point.
+  //  std::cout<<idx<<std::endl;
     if(dist==30.0) ref_ind.push_back(-1);
     else ref_ind.push_back(idx);
   }
+  //std::cout<<"ref : "<<ref_ind.size()<<std::endl;
 }
 
 /** @see knn_search
