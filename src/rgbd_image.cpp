@@ -310,27 +310,21 @@ void RGBDIMAGE::calcJacobian(const std::vector<Point_2d>& warped_edge_px_sub, co
   int n_points = warped_edge_px_sub.size();
   J = Eigen::MatrixXd::Zero(n_points,6); // need to initialize ?
 
-  double fx=K(0,0),fy=K(1,1);
-  double cx=K(0,2),cy=K(1,2);
   double g_x,g_y,X,Y,Z;
   double Zinv, XZinv, YZinv, fxgx, fygy;
-  Point_3d temp3d(3,0);
-  Point_3d temp3d_res(3,0);
+
   for(int i=0; i<n_points; i++){
-    temp3d[0]=warped_edge_px_sub[i][0];
-    temp3d[1]=warped_edge_px_sub[i][1];
-    temp3d[2]=warped_pt_depth[i];
-    proj_3d(temp3d,K,temp3d_res);
-    X=temp3d_res[0];
-    Y=temp3d_res[1];
-    Z=temp3d_res[2]; // warped current pixels.
+    Z = warped_pt_depth[i]; // warped current pixels.
+    X = (warped_edge_px_sub[i][0]-K(0,2))/K(0,0)*Z;
+    Y = (warped_edge_px_sub[i][1]-K(1,2))/K(1,1)*Z;
+
     g_x = key_edge_px_4d[ref_ind[i]][2];
     g_y = key_edge_px_4d[ref_ind[i]][3];
     Zinv = 1/Z;
-    XZinv = X/Z;
-    YZinv = Y/Z;
-    fxgx = fx*g_x;
-    fygy = fy*g_y;
+    XZinv = X*Zinv;
+    YZinv = Y*Zinv;
+    fxgx = K(0,0)*g_x;
+    fygy = K(1,1)*g_y;
 
     J(i,0)= Zinv*fxgx;
     J(i,1)= Zinv*fygy;
@@ -341,33 +335,6 @@ void RGBDIMAGE::calcJacobian(const std::vector<Point_2d>& warped_edge_px_sub, co
   }
 }
 
-void RGBDIMAGE::proj_pixel(const Point_3d& input_arr, const Eigen::Matrix3d& K, Point_3d& output_arr){
-  double fx = K(0,0), fy = K(1,1);
-  double cx = K(0,2), cy = K(1,2);
-  output_arr.resize(3,0);
-  double u,v;
-  double Zinv = 1/input_arr[2];
-  u = fx*input_arr[0]*Zinv + cx;
-  v = fy*input_arr[1]*Zinv + cy;
-  output_arr[0]=u;
-  output_arr[1]=v;
-  output_arr[2]=1;
-}
-
-void RGBDIMAGE::proj_3d(const Point_3d& input_arr, const Eigen::Matrix3d& K, Point_3d& output_arr){
-  double fx = K(0,0), fy = K(1,1);
-  double cx = K(0,2), cy = K(1,2);
-  double fxinv = 1/fx, fyinv = 1/fy;
-  double X,Y,Z;
-  output_arr.resize(3,0);
-  Z = input_arr[2];
-  X = (input_arr[0]-cx)*fxinv*Z;
-  Y = (input_arr[1]-cy)*fyinv*Z;
-  output_arr[0]=X;
-  output_arr[1]=Y;
-  output_arr[2]=Z;
-}
-
 void RGBDIMAGE::warpPoints(const std::vector<Point_4d>& cur_edge_px_4d_sub, const std::vector<double>& cur_pt_depth, const Eigen::Matrix3d& K, const Eigen::MatrixXd& xi_temp, std::vector<Point_2d>& warped_edge_px_sub, std::vector<Point_4d>& warped_edge_px_4d_sub, std::vector<double>& warped_pt_depth){
   Eigen::Matrix4d g_mat;
   int n_points = cur_edge_px_4d_sub.size();
@@ -375,44 +342,35 @@ void RGBDIMAGE::warpPoints(const std::vector<Point_4d>& cur_edge_px_4d_sub, cons
   Eigen::MatrixXd curr_points_affine(4,n_points);
   Eigen::MatrixXd warped_points_affine(4,n_points);
 
+  // allocate the current 3d points into affine form
   for(int i=0;i<n_points;i++){
-    Point_3d temp3d;
-    Point_3d temp3d_res;
-
-    temp3d.push_back(cur_edge_px_4d_sub[i][0]);
-    temp3d.push_back(cur_edge_px_4d_sub[i][1]);
-    temp3d.push_back(cur_pt_depth[i]);
-
-    proj_3d(temp3d,K,temp3d_res);
-    curr_points_affine(0,i) = temp3d_res[0];
-    curr_points_affine(1,i) = temp3d_res[1];
-    curr_points_affine(2,i) = temp3d_res[2];
+    curr_points_affine(0,i) = (cur_edge_px_4d_sub[i][0]-K(0,2))*cur_pt_depth[i]/K(0,0);
+    curr_points_affine(1,i) = (cur_edge_px_4d_sub[i][1]-K(1,2))*cur_pt_depth[i]/K(1,1);
+    curr_points_affine(2,i) = cur_pt_depth[i];
     curr_points_affine(3,i) = 1.0;
   }
 
-  // warping.
-  warped_points_affine=g_mat*curr_points_affine;
+  // warping points
+  warped_points_affine = g_mat*curr_points_affine;
 
   // reprojecting
   Point_2d temp2d(2,0);
   Point_4d temp4d(4,0);
-  warped_edge_px_sub.resize(n_points,temp2d); // initialize
+  warped_edge_px_sub.resize(n_points,temp2d);    // initialize
   warped_edge_px_4d_sub.resize(n_points,temp4d); // initialize
   warped_pt_depth.resize(n_points,0);
+
+  double u,v,Zinv;
   for(int i=0;i<n_points;i++){
-    Point_3d temp3d(3,0);
-    Point_3d temp3d_res;
-    temp3d[0] = warped_points_affine(0,i);
-    temp3d[1] = warped_points_affine(1,i);
-    temp3d[2] = warped_points_affine(2,i);
-    warped_pt_depth[i]=  temp3d[2];
-    proj_pixel(temp3d,K,temp3d_res);
+    Zinv = 1/warped_points_affine(2,i);
+    u = K(0,0)*warped_points_affine(0,i)*Zinv + K(0,2);
+    v = K(1,1)*warped_points_affine(1,i)*Zinv + K(1,2);
 
-    warped_edge_px_sub[i][0]    = temp3d_res[0];
-    warped_edge_px_sub[i][1]    = temp3d_res[1];
+    warped_edge_px_sub[i][0]    = u;
+    warped_edge_px_sub[i][1]    = v;
 
-    warped_edge_px_4d_sub[i][0] = temp3d_res[0];
-    warped_edge_px_4d_sub[i][1] = temp3d_res[1];
+    warped_edge_px_4d_sub[i][0] = u;
+    warped_edge_px_4d_sub[i][1] = v;
     warped_edge_px_4d_sub[i][2] = cur_edge_px_4d_sub[i][2];
     warped_edge_px_4d_sub[i][3] = cur_edge_px_4d_sub[i][3];
   }

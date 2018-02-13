@@ -90,6 +90,12 @@ private:
   std::vector<Point_4d> cur_edge_px_4d,     key_edge_px_4d,        warped_edge_px_4d;
 
   std::vector<Point_2d> cur_edge_px_sub,    warped_edge_px_sub;
+
+  std::vector<Point_2d> cur_edge_px_sub_n;
+  std::vector<Point_4d> cur_edge_px_4d_sub_n;
+  std::vector<Point_2d> key_edge_px_n;
+  std::vector<Point_4d> key_edge_px_4d_n;
+
   std::vector<Point_4d> cur_edge_px_4d_sub, warped_edge_px_4d_sub;
 
   std::vector<double>   cur_pt_u,           cur_pt_v,              key_pt_u,          key_pt_v;

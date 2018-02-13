@@ -19,9 +19,14 @@ inline double distance_squared( const std::vector<double>& a, const std::vector<
     double d_spatial =0;
     double N = a.size();
    // double lambda = 0.7/4.0;
+   double temp;
+
     if(N==4){
+      temp=(a[2]*b[2] + a[3]*b[3]-1.0);
       d_spatial += (a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]);
-      d = d_spatial + 0.175*(a[2]*b[2] + a[3]*b[3]-1)*(a[2]*b[2] + a[3]*b[3]-1);
+      d = d_spatial + 0.175*temp*temp;
+      //d = d_spatial + 0.175*(a[2]*b[2] + a[3]*b[3]-1)*(a[2]*b[2] + a[3]*b[3]-1);
+
       // if(d_spatial >= thres_near) d = 30.0*30.0;
       return d;
     }
@@ -29,7 +34,7 @@ inline double distance_squared( const std::vector<double>& a, const std::vector<
       for( int i=0; i<N; i++ ) d_spatial += (a[i]-b[i])*(a[i]-b[i]);
       // if(d_spatial >= thres_near) d_spatial = 30.0*30.0;
       return d_spatial;
-    }    
+    }
 }
 
 struct Node{

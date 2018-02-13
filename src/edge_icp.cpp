@@ -41,9 +41,9 @@ void VOEdgeICP::run(){
   int ind = init_num-1;
 
 	int N_sample = 500;
-	int max_num_of_icp_iter = 40;
-	double dist_thres = 15.0; // pixels
-	double trans_thres = 0.02; // 2cm
+	int max_num_of_icp_iter = 30;
+	double dist_thres = 15.0; // pixels, not use
+	double trans_thres = 0.05; // 2cm
 	double rot_thres = 3; // 3 degree
 	int iter_shift_search = 7; //after 7 iterations, shift to the 2d NN searching.heuristic.
 
@@ -103,6 +103,8 @@ void VOEdgeICP::run(){
       // Insert points 4d
 			Point_4d temp4d(4,0);
 			this->key_edge_px_4d.resize(this->key_pt_u.size(),temp4d);
+			this->key_edge_px_4d_n.resize(this->key_pt_u.size(),temp4d);
+
 			for(int k=0; k<this->key_pt_u.size(); k++){
 				Point_4d temp4d;
 				temp4d.push_back(this->key_pt_u[k]/params.calib.width);
@@ -114,6 +116,11 @@ void VOEdgeICP::run(){
 				this->key_edge_px_4d[k][1]=temp4d[1];
 				this->key_edge_px_4d[k][2]=temp4d[2];
 				this->key_edge_px_4d[k][3]=temp4d[3];
+
+				this->key_edge_px_4d_n[k][0]=temp4d[0];
+				this->key_edge_px_4d_n[k][1]=temp4d[1];
+				this->key_edge_px_4d_n[k][2]=temp4d[2];
+				this->key_edge_px_4d_n[k][3]=temp4d[3];
 			}
 		  key_tree_4 = new KDTree( temp4d_vec, (dist_thres*dist_thres)/(params.calib.width*params.calib.width) );
 			temp4d_vec.swap(null_vec);
@@ -146,6 +153,15 @@ void VOEdgeICP::run(){
 
 		std::cout<<" # of curr pts before sampling : " <<cur_pt_u.size()<<std::endl;
 
+		// add Gaussian noise on the cur pixels prohibit the vanishing.
+		std::default_random_engine generator;
+		std::normal_distribution<double> distribution(0.0,0.02);
+
+		for(int i=0;i<cur_pt_u.size();i++){
+			cur_pt_u[i]+=distribution(generator);
+			cur_pt_v[i]+=distribution(generator);
+		}
+
 		// sub-sampling - random sampling for N_sample.
 
 		std::vector<int> sample_ind;
@@ -159,6 +175,8 @@ void VOEdgeICP::run(){
 		Point_4d temp4d(4,0);
 		this->cur_edge_px_sub.resize(N_sample,temp2d);
 		this->cur_edge_px_4d_sub.resize(N_sample,temp4d);
+		this->cur_edge_px_sub_n.resize(N_sample,temp2d);
+		this->cur_edge_px_4d_sub_n.resize(N_sample,temp4d);
 	  this->ref_ind.resize(N_sample,-1);
 
 		for(int i=0; i<N_sample;i++){
@@ -170,14 +188,26 @@ void VOEdgeICP::run(){
 			this->cur_edge_px_4d_sub[i][1] = this->cur_pt_v[ind]/params.calib.width;
 			this->cur_edge_px_4d_sub[i][2] = this->cur_grad_u[ind];
 			this->cur_edge_px_4d_sub[i][3] = this->cur_grad_v[ind];
+
+			this->cur_edge_px_sub_n[i][0] = this->cur_pt_u[ind];
+			this->cur_edge_px_sub_n[i][1] = this->cur_pt_v[ind];
+
+			this->cur_edge_px_4d_sub_n[i][0] = this->cur_pt_u[ind];
+			this->cur_edge_px_4d_sub_n[i][1] = this->cur_pt_v[ind];
+			this->cur_edge_px_4d_sub_n[i][2] = this->cur_grad_u[ind];
+			this->cur_edge_px_4d_sub_n[i][3] = this->cur_grad_v[ind];
 		}
 
 		// iterative part
 		int icp_iter = 1;
 		while(icp_iter <=max_num_of_icp_iter) {
 			// warp_points
-			RGBDIMAGE::warpPoints(cur_edge_px_4d_sub, cur_pt_depth, params.calib.K, xi_temp, warped_edge_px_sub, warped_edge_px_4d_sub, warped_pt_depth);
-
+		  RGBDIMAGE::warpPoints(cur_edge_px_4d_sub, cur_pt_depth, params.calib.K, xi_temp, warped_edge_px_sub, warped_edge_px_4d_sub, warped_pt_depth);
+			//std::cout<<warped_edge_px_4d.size()<<std::endl;
+			
+			//warped_edge_px_4d_sub=cur_edge_px_4d_sub;
+			//warped_edge_px_sub = cur_edge_px_sub;
+			//warped_pt_depth=cur_pt_depth;
 			// find robust edge match
 			if (icp_iter > iter_shift_search)  key_tree_2->kdtree_nearest_neighbor(this->warped_edge_px_sub,    this->ref_ind);
 			else 														   key_tree_4->kdtree_nearest_neighbor(this->warped_edge_px_4d_sub, this->ref_ind);
@@ -188,11 +218,12 @@ void VOEdgeICP::run(){
 			// calc_jacobian
 			Eigen::MatrixXd J,Hessian;
 			RGBDIMAGE::calcJacobian(warped_edge_px_sub, this->warped_pt_depth, this->key_edge_px_4d, this->ref_ind, residual, params.calib.K,J);
-			Hessian = J.transpose()*J;
-			-(Hessian.inverse())*J.transpose();
+
 			// calc delta xi
-
-
+			Hessian = J.transpose()*J;
+			//delta_xi=-(Hessian.inverse())*J.transpose();
+			//for(int i=0;i<N_sample;i++) 			std::cout<<residual[i]<<std::endl;
+			//std::cout<<J<<std::endl;
 			// augment delta xi
 			// this->xi_temp += this->delta_xi;
 			// std::cout<<"iter : "<<icp_iter<<std::endl;
