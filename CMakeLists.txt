@@ -1,57 +1,39 @@
-# project
-SET(CMAKE_PROJECT_NAME exe)
-PROJECT(${CMAKE_PROJECT_NAME} C CXX)
-message(${CMAKE_PROJECT_NAME})
-#set(CMAKE_BUILD_TYPE "release" ... FORCE) # Release, RelWithDebInfo 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules/")
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+cmake_minimum_required(VERSION 2.8.3)
+project(edgeicp)
 
-set(Boost_USE_MULTITHREADED ON)
+find_package(catkin REQUIRED cmake_modules)
+find_package(Eigen REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  cv_bridge
+  image_transport
+  sensor_msgs
+  std_msgs
+  message_filters
+)
 
-# Add plain cmake packages
-FIND_PACKAGE(OpenCV REQUIRED)
-# Find_package(sophus REQUIRED)
-# FIND_PACKAGE(Boost COMPONENTS system filesystem thread REQUIRED)
-# FIND_PACKAGE(Threads REQUIRED)
+catkin_package(
+	DEPENDS Eigen
+)
 
-# Include dirs
-INCLUDE_DIRECTORIES(
-  include
-  ${Eigen_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+set(includeDirs ${includeDirs} ${CMAKE_CURRENT_BINARY_DIR})
+set(includeDirs ${includeDirs} include)
+
+set(SRC ${SRC} src/main_script.cpp
+	       src/edgeicp.cpp
+	       include/edgeicp.h
 )
 
 
-# Set link libraries
-LIST(APPEND LINK_LIBS
-  ${OpenCV_LIBS}
-  ${CMAKE_THREAD_LIBS_INIT}
+include_directories( ${includeDirs} )
+include_directories( ${catkin_INCLUDE_DIRS} )
+include_directories( ${Eigen_INCLUDE_DIRS} )
 
-)
-
-
-# Set sourcefiles
-LIST(APPEND SOURCEFILES
-  src/main.cpp
-  src/timer.cpp
-  src/edge_icp.cpp
-  src/rgbd_image.cpp
-  src/debugging.cpp
-  src/KDTree.cpp
-)
-
-
-# Set build flags, set ARM_ARCHITECTURE environment variable on Odroid
-set(CMAKE_CXX_FLAGS "-msse3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(DCMAKE_build_type debug)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -O2 -m64 -Ofast -flto -msse2 -march=native -mfpmath=sse")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3  -DEIGEN_NO_DEBUG -fopenmp -DNDEBUG") # not recommended
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -O2 -m64 -Ofast -flto -msse2 -msse3 -march=native -mfpmath=sse")
+#set(DCMAKE_build_type debug)
 
-
-################################################################################
-# TESTS
-
-ADD_EXECUTABLE(exe ${SOURCEFILES})
-TARGET_LINK_LIBRARIES(exe ${LINK_LIBS})
+add_executable (edgeicp_node ${SRC} )
+target_link_libraries (edgeicp_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries (edgeicp_node ${Eigen_LIBRARIES} )
